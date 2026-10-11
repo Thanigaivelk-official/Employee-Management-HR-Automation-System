@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block title %}Leave Request {{ leave.request_id }} - HR Automation{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1 small">
+                <li class="breadcrumb-item"><a href="{% url 'leave_management:leave_list' %}">Leave Requests</a></li>
+                <li class="breadcrumb-item active">{{ leave.request_id }}</li>
+            </ol>
+        </nav>
+        <h4 class="fw-bold mb-0">Leave Request: {{ leave.request_id }}</h4>
+    </div>
+    <!-- Cancel Action for Employee -->
+    {% if leave.status == 'PENDING' or leave.status == 'APPROVED' %}
+        {% if user.is_super_admin_role or leave.employee.user == user %}
+        <form action="{% url 'leave_management:leave_cancel' leave.pk %}" method="post" class="m-0">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger btn-sm" data-confirm="Are you sure you want to cancel this leave request? Any deducted leave balance will be restored.">
+                <i class="bi bi-x-circle me-1"></i> Cancel Request
+            </button>
+        </form>
+        {% endif %}
+    {% endif %}
+</div>
+
+<div class="row g-4">
+    <!-- Request Details -->
+    <div class="col-lg-7">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <span class="fw-bold"><i class="bi bi-info-circle me-2 text-primary"></i>Application Details</span>
+                <span class="badge {% if leave.status == 'APPROVED' %}bg-success{% elif leave.status == 'REJECTED' %}bg-danger{% elif leave.status == 'CANCELLED' %}bg-secondary{% else %}bg-warning text-dark{% endif %} fs-6">
+                    {{ leave.get_status_display }}
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <div class="text-muted small">Employee</div>
+                        <div class="fw-bold"><a href="{% url 'employees:employee_detail' leave.employee.pk %}">{{ leave.employee.full_name }}</a> ({{ leave.employee.employee_id }})</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="text-muted small">Department</div>
+                        <div class="fw-bold">{{ leave.employee.department.name }}</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="text-muted small">Leave Category</div>
+                        <span class="badge bg-primary-subtle text-primary">{{ leave.leave_type.name }} ({{ leave.leave_type.code }})</span>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="text-muted small">Duration</div>
+                        <div class="fw-bold text-dark">{{ leave.days_count }} working day(s)</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="text-muted small">Start Date</div>
+                        <div class="fw-semibold">{{ leave.start_date|date:"l, F j, Y" }}</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="text-muted small">End Date</div>
+                        <div class="fw-semibold">{{ leave.end_date|date:"l, F j, Y" }}</div>
+                    </div>
+                    <div class="col-12">
+                        <div class="text-muted small">Applicant's Stated Reason</div>
+                        <div class="p-3 bg-light rounded small mt-1 border">{{ leave.reason }}</div>
+                    </div>
+                    {% if leave.document %}
+                    <div class="col-12">
+                        <div class="text-muted small">Attached Supporting Document</div>
+                        <a href="{{ leave.document.url }}" target="_blank" class="btn btn-outline-secondary btn-sm mt-1">
+                            <i class="bi bi-paperclip me-1"></i> View Attachment
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Review & Audit Decision Section -->
+    <div class="col-lg-5">
+        {% if can_review %}
+        <!-- Manager / HR Approval Form -->
+        <div class="card shadow-sm border-warning mb-4">
+            <div class="card-header bg-warning bg-opacity-10 fw-bold text-dark">
+                <i class="bi bi-shield-check me-2"></i>Review Decision Required
+            </div>
+            <div class="card-body">
+                <form action="{% url 'leave_management:leave_review' leave.pk %}" method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Decision</label>
+                        <div class="d-flex gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="action" id="actionApprove" value="APPROVE" checked>
+                                <label class="form-check-label fw-semibold text-success" for="actionApprove">
+                                    <i class="bi bi-check-circle me-1"></i> Approve
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="action" id="actionReject" value="REJECT">
+                                <label class="form-check-label fw-semibold text-danger" for="actionReject">
+                                    <i class="bi bi-x-circle me-1"></i> Reject
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Reviewer Comments / Remarks</label>
+                        <textarea name="comments" class="form-control" rows="3" placeholder="Add optional comments or justification for applicant..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm w-100" data-confirm="Confirm and record your decision for this leave request?">
+                        Submit Decision
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Resolution History -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white fw-bold">
+                <i class="bi bi-clock-history me-2 text-secondary"></i>Audit &amp; Decision History
+            </div>
+            <div class="card-body">
+                <div class="small mb-2">
+                    <span class="text-muted">Submitted On:</span>
+                    <span class="fw-semibold">{{ leave.created_at|date:"M d, Y H:i" }}</span>
+                </div>
+                {% if leave.reviewed_by %}
+                <div class="small mb-2">
+                    <span class="text-muted">Reviewed By:</span>
+                    <span class="fw-semibold">{{ leave.reviewed_by.get_full_name|default:leave.reviewed_by.username }}</span>
+                </div>
+                <div class="small mb-2">
+                    <span class="text-muted">Decision Recorded At:</span>
+                    <span class="fw-semibold">{{ leave.reviewed_at|date:"M d, Y H:i" }}</span>
+                </div>
+                <div class="small">
+                    <span class="text-muted">Reviewer Comments:</span>
+                    <div class="p-2 bg-light rounded mt-1 border text-secondary">{{ leave.review_comments|default:"None provided" }}</div>
+                </div>
+                {% else %}
+                <div class="text-muted small py-2">
+                    <i class="bi bi-hourglass me-1"></i> Awaiting administrative review by reporting manager or HR team.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

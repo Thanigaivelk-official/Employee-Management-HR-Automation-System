@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Salary Structure - HR Automation{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <span class="fw-bold"><i class="bi bi-cash-coin me-2 text-primary"></i>Configure Salary Structure: {{ object.employee.full_name }} ({{ object.employee.employee_id }})</span>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <h6 class="fw-bold text-primary mb-3">Earnings Components</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Basic Salary ($) *</label>
+                            {{ form.basic_salary }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">House Rent Allowance (HRA) ($) *</label>
+                            {{ form.hra }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Transport Allowance ($)</label>
+                            {{ form.transport_allowance }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Medical Allowance ($)</label>
+                            {{ form.medical_allowance }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Special Allowance ($)</label>
+                            {{ form.special_allowance }}
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-primary mb-3 pt-3 border-top">Deductions &amp; Statutory Settings</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Provident Fund (PF) Rate (%)</label>
+                            {{ form.pf_rate_percent }}
+                            <div class="form-text small">Calculated as % of basic salary (Standard: 12%)</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Professional Tax ($)</label>
+                            {{ form.professional_tax }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Effective Date</label>
+                            {{ form.effective_from }}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                        <a href="{% url 'employees:employee_detail' object.employee.pk %}" class="btn btn-light btn-sm">Cancel</a>
+                        <button type="submit" class="btn btn-primary btn-sm px-4">Update Salary Structure</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}Departments - HR Automation{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold mb-1">Departments</h4>
+        <p class="text-muted small mb-0">Organizational divisions, assigned leadership, and staffing capacity.</p>
+    </div>
+    {% if user.is_hr_admin_role %}
+    <a href="{% url 'departments:department_add' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-circle me-1"></i> Add Department
+    </a>
+    {% endif %}
+</div>
+
+<!-- Filters -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body p-3">
+        <form method="get" class="row g-2">
+            <div class="col-md-6">
+                <input type="text" name="search" class="form-control form-control-sm" placeholder="Search by name or code..." value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-4">
+                <select name="status" class="form-select form-select-sm">
+                    <option value="">All Statuses</option>
+                    <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Active Only</option>
+                    <option value="inactive" {% if request.GET.status == 'inactive' %}selected{% endif %}>Inactive Only</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-secondary btn-sm flex-grow-1"><i class="bi bi-search me-1"></i> Filter</button>
+                <a href="{% url 'departments:department_list' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-x-circle"></i></a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Departments Grid Cards -->
+<div class="row g-3">
+    {% for dept in departments %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow-sm h-100 mb-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="badge bg-primary-subtle text-primary fw-bold px-2 py-1">{{ dept.code }}</span>
+                    {% if dept.is_active %}
+                    <span class="badge bg-success-subtle text-success small">Active</span>
+                    {% else %}
+                    <span class="badge bg-danger-subtle text-danger small">Deactivated</span>
+                    {% endif %}
+                </div>
+                <h5 class="fw-bold mb-1">
+                    <a href="{% url 'departments:department_detail' dept.pk %}" class="text-decoration-none text-dark">{{ dept.name }}</a>
+                </h5>
+                <p class="text-muted small mb-3" style="min-height: 38px;">{{ dept.description|default:"No description provided."|truncatechars:90 }}</p>
+
+                <div class="border-top pt-2 mt-2">
+                    <div class="d-flex justify-content-between small text-muted mb-1">
+                        <span><i class="bi bi-person-badge me-1"></i>Manager:</span>
+                        <span class="fw-semibold text-dark">{{ dept.manager.full_name|default:"Unassigned" }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between small text-muted">
+                        <span><i class="bi bi-people me-1"></i>Active Staff:</span>
+                        <span class="fw-bold text-primary">{{ dept.total_active_staff }}</span>
+                    </div>
+                </div>
+            </div>
+            {% if user.is_hr_admin_role %}
+            <div class="card-footer bg-white border-top-0 d-flex justify-content-end gap-2 pt-0 pb-3">
+                <a href="{% url 'departments:department_edit' dept.pk %}" class="btn btn-outline-secondary btn-sm py-1 px-2" title="Edit">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+                <form action="{% url 'departments:department_toggle_active' dept.pk %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn {% if dept.is_active %}btn-outline-warning{% else %}btn-outline-success{% endif %} btn-sm py-1 px-2"
+                            data-confirm="Are you sure you want to {% if dept.is_active %}deactivate{% else %}activate{% endif %} this department?">
+                        <i class="bi {% if dept.is_active %}bi-archive{% else %}bi-arrow-clockwise{% endif %}"></i>
+                        {% if dept.is_active %}Deactivate{% else %}Activate{% endif %}
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5 text-muted">
+        <i class="bi bi-building-slash fs-1 d-block mb-2"></i>
+        <p>No departments found matching your criteria.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

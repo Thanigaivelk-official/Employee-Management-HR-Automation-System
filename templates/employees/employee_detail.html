@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ employee.full_name }} - Employee Dossier{% endblock %}
+
+{% block content %}
+<!-- Top Header & Actions -->
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1 small">
+                <li class="breadcrumb-item"><a href="{% url 'employees:employee_list' %}">Employees</a></li>
+                <li class="breadcrumb-item active">{{ employee.employee_id }}</li>
+            </ol>
+        </nav>
+        <h4 class="fw-bold mb-0">{{ employee.full_name }} <span class="badge bg-light text-dark border">{{ employee.employee_id }}</span></h4>
+    </div>
+    {% if user.is_hr_admin_role %}
+    <div class="d-flex gap-2">
+        <a href="{% url 'employees:employee_edit' employee.pk %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-pencil me-1"></i> Edit Profile
+        </a>
+        {% if salary_structure %}
+        <a href="{% url 'payroll:salary_structure_edit' salary_structure.pk %}" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-cash me-1"></i> Edit Salary Structure
+        </a>
+        {% endif %}
+        <!-- Deactivation Button triggers Modal -->
+        <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deactivateModal">
+            <i class="bi bi-person-x me-1"></i> Change Status
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Employee Header Card -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body p-4">
+        <div class="d-flex flex-wrap align-items-center gap-4">
+            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 72px; height: 72px; font-size: 1.8rem; font-weight: 700;">
+                {{ employee.first_name|first|upper }}{{ employee.last_name|first|upper }}
+            </div>
+            <div>
+                <h4 class="fw-bold mb-1">{{ employee.full_name }}</h4>
+                <div class="text-muted small mb-2">{{ employee.designation }} &bull; <span class="fw-semibold text-dark">{{ employee.department.name }}</span></div>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="badge bg-primary-subtle text-primary">{{ employee.get_employment_type_display }}</span>
+                    <span class="badge {% if employee.employment_status == 'ACTIVE' %}bg-success{% elif employee.employment_status == 'ON_LEAVE' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                        {{ employee.get_employment_status_display }}
+                    </span>
+                    <span class="badge bg-light text-muted border">Joined {{ employee.date_of_joining|date:"M d, Y" }}</span>
+                </div>
+            </div>
+            <div class="ms-auto d-none d-md-block text-end">
+                <div class="text-muted small">Official Email</div>
+                <div class="fw-bold">{{ employee.email }}</div>
+                <div class="text-muted small mt-1">Phone: {{ employee.phone }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Information Grid -->
+<div class="row g-4 mb-4">
+    <!-- Personal Details -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100 mb-0">
+            <div class="card-header bg-white fw-bold"><i class="bi bi-person-lines-fill me-2 text-primary"></i>Personal &amp; Contact Details</div>
+            <div class="card-body">
+                <table class="table table-sm table-borderless mb-0">
+                    <tr><td class="text-muted" style="width: 38%;">Date of Birth:</td><td class="fw-semibold">{{ employee.date_of_birth|default:"Not specified" }}</td></tr>
+                    <tr><td class="text-muted">Gender:</td><td class="fw-semibold">{{ employee.get_gender_display }}</td></tr>
+                    <tr><td class="text-muted">Emergency Contact:</td><td class="fw-semibold">{{ employee.emergency_contact|default:"-" }}</td></tr>
+                    <tr><td class="text-muted">Residential Address:</td><td>{{ employee.address|default:"Not provided" }}</td></tr>
+                    <tr><td class="text-muted">Login Account:</td><td>{% if employee.user %}<span class="badge bg-success-subtle text-success">Linked ({{ employee.user.username }})</span>{% else %}<span class="badge bg-secondary-subtle text-secondary">None</span>{% endif %}</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Employment Details -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100 mb-0">
+            <div class="card-header bg-white fw-bold"><i class="bi bi-diagram-3 me-2 text-primary"></i>Reporting &amp; Departmental Hierarchy</div>
+            <div class="card-body">
+                <table class="table table-sm table-borderless mb-0">
+                    <tr><td class="text-muted" style="width: 38%;">Department:</td><td class="fw-semibold">{{ employee.department.name }} ({{ employee.department.code }})</td></tr>
+                    <tr><td class="text-muted">Reporting Manager:</td><td class="fw-semibold">{% if employee.reporting_manager %}<a href="{% url 'employees:employee_detail' employee.reporting_manager.pk %}" class="text-decoration-none">{{ employee.reporting_manager.full_name }}</a>{% else %}Direct to Executive{% endif %}</td></tr>
+                    <tr><td class="text-muted">Employment Type:</td><td class="fw-semibold">{{ employee.get_employment_type_display }}</td></tr>
+                    <tr><td class="text-muted">Current Month Attendance:</td><td><span class="badge bg-success">{{ present_days }} Present</span> <span class="badge bg-danger">{{ absent_days }} Absent</span> <span class="badge bg-warning text-dark">{{ leave_days }} Leave</span></td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Leave Balances -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white fw-bold"><i class="bi bi-calendar2-check me-2 text-primary"></i>Annual Leave Allocation &amp; Balances</div>
+    <div class="card-body">
+        <div class="row g-3">
+            {% for b in leave_balances %}
+            <div class="col-sm-6 col-md-3">
+                <div class="border rounded p-3 bg-light">
+                    <div class="small fw-bold text-muted">{{ b.leave_type.name }} ({{ b.leave_type.code }})</div>
+                    <div class="h4 fw-bold text-primary mb-1">{{ b.remaining|floatformat:1 }} <small class="text-muted fs-6">left</small></div>
+                    <div class="small text-muted">{{ b.used|floatformat:1 }} used of {{ b.total_allocated|floatformat:0 }} allocated</div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center text-muted py-3">No leave balance records found for current calendar year.</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Confidential Payroll History (Restricted) -->
+{% if can_view_payroll %}
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <span class="fw-bold"><i class="bi bi-shield-lock me-2 text-success"></i>Confidential Payroll &amp; Payslips</span>
+        {% if salary_structure %}
+        <span class="badge bg-light text-dark border">Base: ${{ salary_structure.basic_salary:,.2f }} | Monthly Gross: ${{ salary_structure.standard_gross_monthly:,.2f }}</span>
+        {% endif %}
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Payslip Number</th>
+                        <th>Pay Period</th>
+                        <th>Gross Salary</th>
+                        <th>Total Deductions</th>
+                        <th>Net Take-Home</th>
+                        <th>Status</th>
+                        <th class="text-end">Download</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in recent_payslips %}
+                    <tr>
+                        <td class="fw-semibold small"><a href="{% url 'payroll:payroll_detail' p.pk %}">{{ p.payslip_number }}</a></td>
+                        <td>{{ p.month }}/{{ p.year }}</td>
+                        <td>${{ p.gross_salary:,.2f }}</td>
+                        <td class="text-danger">-${{ p.total_deductions:,.2f }}</td>
+                        <td class="fw-bold text-success">${{ p.net_salary:,.2f }}</td>
+                        <td><span class="badge bg-success-subtle text-success">{{ p.get_status_display }}</span></td>
+                        <td class="text-end">
+                            <a href="{% url 'payroll:payslip_pdf' p.pk %}" class="btn btn-outline-danger btn-sm py-0 px-2">
+                                <i class="bi bi-file-earmark-pdf me-1"></i> PDF
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted small">No historical payslip records generated yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Deactivation / Status Change Modal -->
+{% if user.is_hr_admin_role %}
+<div class="modal fade" id="deactivateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{% url 'employees:employee_deactivate' employee.pk %}" method="post">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Update Employment Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small text-muted">
+                        Changing status to <strong>Resigned</strong> or <strong>Terminated</strong> safely archives the employee record without deleting historical payroll, attendance, or leave records. Linked user login will also be automatically deactivated.
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">New Status</label>
+                        <select name="status" class="form-select">
+                            <option value="ACTIVE" {% if employee.employment_status == 'ACTIVE' %}selected{% endif %}>Active</option>
+                            <option value="ON_LEAVE" {% if employee.employment_status == 'ON_LEAVE' %}selected{% endif %}>On Leave</option>
+                            <option value="RESIGNED" {% if employee.employment_status == 'RESIGNED' %}selected{% endif %}>Resigned</option>
+                            <option value="TERMINATED" {% if employee.employment_status == 'TERMINATED' %}selected{% endif %}>Terminated</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger btn-sm">Confirm Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

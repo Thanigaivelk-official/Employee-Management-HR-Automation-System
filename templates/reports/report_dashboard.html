@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}Reports &amp; Data Exports - HR Automation{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h4 class="fw-bold mb-1">Reports &amp; Data Exports</h4>
+    <p class="text-muted small mb-0">Generate, stream, and download company-wide records in CSV and ReportLab vector PDF formats.</p>
+</div>
+
+<div class="row g-4">
+    <!-- Report 1: Employee Directory -->
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white fw-bold d-flex align-items-center">
+                <i class="bi bi-people-fill text-primary me-2 fs-5"></i>
+                <span>Employee Directory Report</span>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">Export full roster of active staff, designations, departments, contact info, and joining dates.</p>
+                <form action="{% url 'reports:export_employees_csv' %}" method="get" class="row g-2 mb-3">
+                    <div class="col-sm-8">
+                        <select name="department" class="form-select form-select-sm">
+                            <option value="">All Departments</option>
+                            {% for d in departments %}
+                            <option value="{{ d.pk }}">{{ d.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-sm-4">
+                        <button type="submit" class="btn btn-outline-primary btn-sm w-100">
+                            <i class="bi bi-file-earmark-spreadsheet me-1"></i> CSV
+                        </button>
+                    </div>
+                </form>
+                <a href="{% url 'reports:export_employees_pdf' %}" class="btn btn-outline-danger btn-sm w-100">
+                    <i class="bi bi-file-earmark-pdf me-1"></i> Generate PDF Directory
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report 2: Attendance Monthly Summary -->
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white fw-bold d-flex align-items-center">
+                <i class="bi bi-clock-history text-success me-2 fs-5"></i>
+                <span>Attendance Log &amp; Durations</span>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">Export itemized clock-in/out timestamps, hours worked, late arrival flags, and status codes.</p>
+                <form action="{% url 'reports:export_attendance_csv' %}" method="get" class="row g-2">
+                    <div class="col-6">
+                        <input type="number" name="month" class="form-control form-control-sm" value="{{ today.month }}" min="1" max="12" placeholder="Month">
+                    </div>
+                    <div class="col-6">
+                        <input type="number" name="year" class="form-control form-control-sm" value="{{ today.year }}" placeholder="Year">
+                    </div>
+                    <div class="col-12 mt-2">
+                        <button type="submit" class="btn btn-outline-success btn-sm w-100">
+                            <i class="bi bi-download me-1"></i> Export Attendance CSV
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report 3: Leave Request Log -->
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white fw-bold d-flex align-items-center">
+                <i class="bi bi-calendar2-check text-warning me-2 fs-5"></i>
+                <span>Leave Applications &amp; Balances</span>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">Export history of employee leave requests, approval decisions, comments, and working day counts.</p>
+                <a href="{% url 'reports:export_leaves_csv' %}" class="btn btn-outline-warning btn-sm w-100 text-dark">
+                    <i class="bi bi-download me-1"></i> Download Leave Requests CSV
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report 4: Payroll Master Summary -->
+    {% if user.is_hr_admin_role %}
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white fw-bold d-flex align-items-center">
+                <i class="bi bi-cash-stack text-info me-2 fs-5"></i>
+                <span>Payroll Master Register</span>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">Download complete payroll disbursement breakdown including basic, allowances, PF, tax, and net pays.</p>
+                <form action="{% url 'reports:export_payroll_csv' %}" method="get" class="row g-2">
+                    <div class="col-6">
+                        <input type="number" name="month" class="form-control form-control-sm" value="{{ today.month }}" min="1" max="12" placeholder="Month">
+                    </div>
+                    <div class="col-6">
+                        <input type="number" name="year" class="form-control form-control-sm" value="{{ today.year }}" placeholder="Year">
+                    </div>
+                    <div class="col-12 mt-2">
+                        <button type="submit" class="btn btn-outline-info btn-sm w-100 text-dark">
+                            <i class="bi bi-download me-1"></i> Download Payroll CSV
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

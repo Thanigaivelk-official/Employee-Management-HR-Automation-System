@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}Payslip {{ payroll.payslip_number }} - HR Automation{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1 small">
+                <li class="breadcrumb-item"><a href="{% url 'payroll:payroll_list' %}">Payroll</a></li>
+                <li class="breadcrumb-item active">{{ payroll.payslip_number }}</li>
+            </ol>
+        </nav>
+        <h4 class="fw-bold mb-0">Salary Slip: {{ payroll.payslip_number }}</h4>
+    </div>
+    <a href="{% url 'payroll:payslip_pdf' payroll.pk %}" class="btn btn-danger btn-sm">
+        <i class="bi bi-file-earmark-pdf me-1"></i> Download PDF Payslip
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card shadow-sm border-0 p-4 bg-white">
+            <!-- Brand & Organization Title -->
+            <div class="text-center pb-3 border-bottom mb-4">
+                <h4 class="fw-bold text-primary mb-1">EMPLOYEE MANAGEMENT &amp; HR AUTOMATION</h4>
+                <div class="text-muted small">Corporate Human Resources &bull; Confidential Salary Statement</div>
+                <div class="badge bg-primary-subtle text-primary mt-2 px-3 py-1 fs-6">Pay Period: {{ payroll.month }}/{{ payroll.year }}</div>
+            </div>
+
+            <!-- Meta details -->
+            <div class="row g-3 mb-4 p-3 bg-light rounded border">
+                <div class="col-sm-6 col-md-3">
+                    <div class="text-muted small">Employee ID</div>
+                    <div class="fw-bold">{{ payroll.employee.employee_id }}</div>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <div class="text-muted small">Employee Name</div>
+                    <div class="fw-bold">{{ payroll.employee.full_name }}</div>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <div class="text-muted small">Department</div>
+                    <div class="fw-bold">{{ payroll.employee.department.name }}</div>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <div class="text-muted small">Designation</div>
+                    <div class="fw-bold">{{ payroll.employee.designation }}</div>
+                </div>
+            </div>
+
+            <!-- Earnings vs Deductions Breakdown -->
+            <div class="row g-4 mb-4">
+                <!-- Earnings Column -->
+                <div class="col-md-6">
+                    <div class="border rounded p-3 h-100">
+                        <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">Earnings Breakdown</h6>
+                        <div class="d-flex justify-content-between small mb-2">
+                            <span class="text-muted">Basic Salary</span>
+                            <span class="fw-semibold">${{ payroll.basic_salary:,.2f }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between small mb-2">
+                            <span class="text-muted">House Rent Allowance (HRA)</span>
+                            <span class="fw-semibold">${{ payroll.hra:,.2f }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between small mb-2">
+                            <span class="text-muted">Allowances (Transport, Medical, Special)</span>
+                            <span class="fw-semibold">${{ payroll.allowances_total:,.2f }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between small mb-2">
+                            <span class="text-muted">Bonus / Incentives</span>
+                            <span class="fw-semibold">${{ payroll.bonus:,.2f }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between fw-bold pt-2 border-top mt-3">
+                            <span>Total Gross Earnings</span>
+                            <span class="text-primary">${{ payroll.gross_salary:,.2f }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Deductions Column -->
+                <div class="col-md-6">
+                    <div class="border rounded p-3 h-100">
+                        <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">Statutory &amp; Leave Deductions</h6>
+                        <div class="d-flex justify-content-between small mb-2">
+                            <span class="text-muted">Provident Fund (PF)</span>
+                            <span class="fw-semibold text-danger">-${{ payroll.pf_deduction:,.2f }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between small mb-2">
+                            <span class="text-muted">Professional / State Tax</span>
+                            <span class="fw-semibold text-danger">-${{ payroll.tax_deduction:,.2f }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between small mb-2">
+                            <span class="text-muted">Unpaid Absence Adjustments</span>
+                            <span class="fw-semibold text-danger">-${{ payroll.unpaid_leave_deduction:,.2f }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between fw-bold pt-2 border-top mt-3">
+                            <span>Total Deductions</span>
+                            <span class="text-danger">-${{ payroll.total_deductions:,.2f }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Net Salary Highlight Card -->
+            <div class="p-3 bg-success bg-opacity-10 rounded border border-success d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <span class="text-muted small text-uppercase fw-bold">Net Take-Home Remuneration</span>
+                    <h3 class="fw-bold text-success mb-0">${{ payroll.net_salary:,.2f }}</h3>
+                </div>
+                <div>
+                    <span class="badge bg-success px-3 py-2">Status: {{ payroll.get_status_display }}</span>
+                </div>
+            </div>
+
+            <div class="text-center text-muted small pt-3 border-top">
+                Computer-generated electronic document issued by Corporate Payroll Services.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

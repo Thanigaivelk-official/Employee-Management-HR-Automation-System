@@ -1,0 +1,425 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Employee Management & HR Automation System{% endblock %}
+
+{% block content %}
+<!-- Top Header & Clock Widget -->
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+        <h3 class="fw-bold mb-1">Welcome, {{ user.get_full_name|default:user.username }}</h3>
+        <p class="text-muted small mb-0">Role: <span class="badge bg-primary">{{ user.get_role_display }}</span> &bull; Overview for {{ today|date:"l, F j, Y" }}</p>
+    </div>
+
+    <!-- Quick Clock In / Out Action -->
+    {% if employee_profile %}
+    <div class="card shadow-sm border-0 mb-0 px-3 py-2 bg-white d-flex flex-row align-items-center gap-3">
+        <div>
+            <div class="text-muted" style="font-size: 0.75rem;">ATTENDANCE TODAY</div>
+            <div class="small fw-bold">
+                {% if my_today_att %}
+                    {% if my_today_att.check_out %}
+                        <span class="text-success"><i class="bi bi-check-circle-fill"></i> Completed ({{ my_today_att.working_hours }}h)</span>
+                    {% else %}
+                        <span class="text-primary"><i class="bi bi-play-circle-fill"></i> Clocked In @ {{ my_today_att.check_in|time:"H:i" }}</span>
+                    {% endif %}
+                {% else %}
+                    <span class="text-secondary"><i class="bi bi-circle"></i> Not Clocked In</span>
+                {% endif %}
+            </div>
+        </div>
+        <form action="{% url 'attendance:clock_in_out' %}" method="post" class="m-0">
+            {% csrf_token %}
+            {% if not my_today_att %}
+            <button type="submit" class="btn btn-success btn-sm px-3 fw-semibold">
+                <i class="bi bi-box-arrow-in-right me-1"></i> Clock In
+            </button>
+            {% elif not my_today_att.check_out %}
+            <button type="submit" class="btn btn-warning btn-sm px-3 fw-semibold">
+                <i class="bi bi-box-arrow-right me-1"></i> Clock Out
+            </button>
+            {% else %}
+            <button class="btn btn-secondary btn-sm px-3 fw-semibold" disabled>
+                Done
+            </button>
+            {% endif %}
+        </form>
+    </div>
+    {% endif %}
+</div>
+
+<!-- ================= SUPER ADMIN & HR ADMIN DASHBOARD ================= -->
+{% if user.is_hr_admin_role %}
+<div class="row g-3 mb-4">
+    <!-- Stat 1: Total Employees -->
+    <div class="col-sm-6 col-xl-2">
+        <div class="card stat-card h-100 p-3 mb-0">
+            <div class="stat-label">ACTIVE EMPLOYEES</div>
+            <div class="stat-value">{{ total_employees }}</div>
+            <div class="small text-muted mt-1"><i class="bi bi-people me-1"></i>Total headcount</div>
+        </div>
+    </div>
+    <!-- Stat 2: Departments -->
+    <div class="col-sm-6 col-xl-2">
+        <div class="card stat-card stat-purple h-100 p-3 mb-0">
+            <div class="stat-label">DEPARTMENTS</div>
+            <div class="stat-value">{{ total_departments }}</div>
+            <div class="small text-muted mt-1"><i class="bi bi-building me-1"></i>Active divisions</div>
+        </div>
+    </div>
+    <!-- Stat 3: Present Today -->
+    <div class="col-sm-6 col-xl-2">
+        <div class="card stat-card stat-green h-100 p-3 mb-0">
+            <div class="stat-label">PRESENT TODAY</div>
+            <div class="stat-value text-success">{{ present_today }}</div>
+            <div class="small text-muted mt-1"><i class="bi bi-check2-circle me-1"></i>Logged in</div>
+        </div>
+    </div>
+    <!-- Stat 4: Absent Today -->
+    <div class="col-sm-6 col-xl-2">
+        <div class="card stat-card stat-rose h-100 p-3 mb-0">
+            <div class="stat-label">ABSENT TODAY</div>
+            <div class="stat-value text-danger">{{ absent_today }}</div>
+            <div class="small text-muted mt-1"><i class="bi bi-x-circle me-1"></i>Confirmed unlogged</div>
+        </div>
+    </div>
+    <!-- Stat 5: Pending Leaves -->
+    <div class="col-sm-6 col-xl-2">
+        <div class="card stat-card stat-amber h-100 p-3 mb-0">
+            <div class="stat-label">PENDING LEAVES</div>
+            <div class="stat-value text-warning">{{ pending_leaves_count }}</div>
+            <div class="small text-muted mt-1"><i class="bi bi-hourglass-split me-1"></i>Requires action</div>
+        </div>
+    </div>
+    <!-- Stat 6: Monthly Payroll -->
+    <div class="col-sm-6 col-xl-2">
+        <div class="card stat-card stat-purple h-100 p-3 mb-0">
+            <div class="stat-label">PAYROLL (MONTH)</div>
+            <div class="stat-value text-primary" style="font-size: 1.4rem;">${{ current_month_payroll|floatformat:0 }}</div>
+            <div class="small text-muted mt-1"><i class="bi bi-cash-coin me-1"></i>Net processed</div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-8">
+        <div class="card shadow-sm h-100 mb-0">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <span class="fw-bold"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Department Headcount Distribution</span>
+                <a href="{% url 'departments:department_list' %}" class="small text-decoration-none">Manage Departments</a>
+            </div>
+            <div class="card-body">
+                <div style="height: 280px; position: relative;">
+                    <canvas id="deptChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow-sm h-100 mb-0">
+            <div class="card-header bg-white">
+                <span class="fw-bold"><i class="bi bi-pie-chart-fill text-info me-2"></i>Today's Attendance Status</span>
+            </div>
+            <div class="card-body">
+                <div style="height: 280px; position: relative;">
+                    <canvas id="attendanceDoughnutChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pending Approvals & Recent Activities -->
+<div class="row g-3">
+    <!-- Pending Approvals -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100 mb-0">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <span class="fw-bold"><i class="bi bi-hourglass-top text-warning me-2"></i>Pending Leave Requests</span>
+                <a href="{% url 'leave_management:leave_list' %}?status=PENDING" class="small text-decoration-none">All Pending</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Type</th>
+                                <th>Duration</th>
+                                <th>Dates</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for lr in recent_leaves %}
+                            <tr>
+                                <td class="fw-semibold small">{{ lr.employee.full_name }}</td>
+                                <td><span class="badge bg-light text-dark border">{{ lr.leave_type.code }}</span></td>
+                                <td class="small">{{ lr.days_count }} day(s)</td>
+                                <td class="small text-muted">{{ lr.start_date|date:"M d" }} - {{ lr.end_date|date:"M d" }}</td>
+                                <td class="text-end">
+                                    <a href="{% url 'leave_management:leave_detail' lr.pk %}" class="btn btn-outline-primary btn-sm py-0 px-2">Review</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted small">No pending leave requests awaiting approval.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Audit Logs -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100 mb-0">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <span class="fw-bold"><i class="bi bi-shield-check text-secondary me-2"></i>Recent Administrative Activity</span>
+                <a href="{% url 'audit:audit_list' %}" class="small text-decoration-none">Audit Trail</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush small">
+                    {% for log in recent_audit_logs %}
+                    <div class="list-group-item py-2 px-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-bold text-dark">{{ log.actor.username|default:"System" }} &bull; <span class="badge bg-secondary-subtle text-secondary-emphasis">{{ log.action }}</span></span>
+                            <span class="text-muted" style="font-size: 0.75rem;">{{ log.created_at|timesince }} ago</span>
+                        </div>
+                        <div class="text-muted mt-1">{{ log.change_summary|truncatechars:85 }}</div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4 text-muted small">No recent logs recorded.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= DEPARTMENT MANAGER DASHBOARD ================= -->
+{% elif user.role == 'MANAGER' %}
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-md-3">
+        <div class="card stat-card h-100 p-3 mb-0">
+            <div class="stat-label">TEAM MEMBERS</div>
+            <div class="stat-value">{{ team_count }}</div>
+            <div class="small text-muted mt-1">Supervised staff</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="card stat-card stat-green h-100 p-3 mb-0">
+            <div class="stat-label">TEAM PRESENT TODAY</div>
+            <div class="stat-value text-success">{{ team_present }}</div>
+            <div class="small text-muted mt-1">On duty</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="card stat-card stat-amber h-100 p-3 mb-0">
+            <div class="stat-label">TEAM ON LEAVE</div>
+            <div class="stat-value text-warning">{{ team_leave }}</div>
+            <div class="small text-muted mt-1">Approved absences</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="card stat-card stat-rose h-100 p-3 mb-0">
+            <div class="stat-label">PENDING APPROVALS</div>
+            <div class="stat-value text-danger">{{ team_pending_leaves_count }}</div>
+            <div class="small text-muted mt-1">Team requests</div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <span class="fw-bold"><i class="bi bi-hourglass-top text-warning me-2"></i>Leave Requests Awaiting Your Review</span>
+        <a href="{% url 'leave_management:leave_list' %}?status=PENDING" class="small text-decoration-none">View All</a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Type</th>
+                        <th>Duration</th>
+                        <th>Dates</th>
+                        <th>Reason</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lr in recent_leaves %}
+                    <tr>
+                        <td class="fw-semibold small">{{ lr.employee.full_name }}</td>
+                        <td><span class="badge bg-light text-dark border">{{ lr.leave_type.code }}</span></td>
+                        <td class="small">{{ lr.days_count }} day(s)</td>
+                        <td class="small text-muted">{{ lr.start_date|date:"M d" }} - {{ lr.end_date|date:"M d" }}</td>
+                        <td class="small text-muted">{{ lr.reason|truncatechars:40 }}</td>
+                        <td class="text-end">
+                            <a href="{% url 'leave_management:leave_detail' lr.pk %}" class="btn btn-outline-primary btn-sm py-0 px-2">Review</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted small">No pending leave requests for your team.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ================= EMPLOYEE SELF-SERVICE DASHBOARD ================= -->
+{% else %}
+<div class="row g-3 mb-4">
+    <!-- Leave Balances Cards -->
+    {% for bal in my_leave_balances %}
+    <div class="col-sm-6 col-md-3">
+        <div class="card stat-card {% if bal.leave_type.code == 'CL' %}stat-card{% elif bal.leave_type.code == 'SL' %}stat-rose{% elif bal.leave_type.code == 'EL' %}stat-green{% else %}stat-purple{% endif %} p-3 mb-0">
+            <div class="stat-label">{{ bal.leave_type.name|upper }}</div>
+            <div class="stat-value">{{ bal.remaining|floatformat:1 }} <span style="font-size: 0.9rem; font-weight: 500;" class="text-muted">/ {{ bal.total_allocated|floatformat:0 }} days</span></div>
+            <div class="small text-muted mt-1">{{ bal.used|floatformat:1 }} days consumed</div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="row g-3 mb-4">
+    <!-- Quick Actions -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white fw-bold">Quick Actions</div>
+            <div class="card-body d-flex flex-column gap-2">
+                <a href="{% url 'leave_management:leave_apply' %}" class="btn btn-primary py-2 text-start">
+                    <i class="bi bi-calendar-plus me-2"></i> Apply for Leave
+                </a>
+                <a href="{% url 'attendance:attendance_list' %}" class="btn btn-outline-secondary py-2 text-start">
+                    <i class="bi bi-clock-history me-2"></i> View My Attendance Log
+                </a>
+                <a href="{% url 'payroll:payroll_list' %}" class="btn btn-outline-secondary py-2 text-start">
+                    <i class="bi bi-receipt me-2"></i> Access My Payslips
+                </a>
+                <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary py-2 text-start">
+                    <i class="bi bi-person me-2"></i> View Employment Profile
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Recent Leaves -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <span class="fw-bold">My Recent Leave Applications</span>
+                <a href="{% url 'leave_management:leave_list' %}" class="small text-decoration-none">Full History</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Dates</th>
+                                <th>Days</th>
+                                <th>Status</th>
+                                <th class="text-end">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for lr in my_recent_leaves %}
+                            <tr>
+                                <td>{{ lr.leave_type.name }}</td>
+                                <td class="small">{{ lr.start_date|date:"M d, Y" }} - {{ lr.end_date|date:"M d, Y" }}</td>
+                                <td>{{ lr.days_count }}</td>
+                                <td>
+                                    <span class="badge {% if lr.status == 'APPROVED' %}bg-success{% elif lr.status == 'REJECTED' %}bg-danger{% elif lr.status == 'CANCELLED' %}bg-secondary{% else %}bg-warning text-dark{% endif %}">
+                                        {{ lr.get_status_display }}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <a href="{% url 'leave_management:leave_detail' lr.pk %}" class="btn btn-light btn-sm py-0 px-2">View</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted small">You haven't submitted any leave requests yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+{% if user.is_hr_admin_role %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // 1. Department Bar Chart
+    const deptLabels = JSON.parse('{{ dept_labels_json|escapejs|default:"[]" }}');
+    const deptValues = JSON.parse('{{ dept_values_json|escapejs|default:"[]" }}');
+
+    const ctxDept = document.getElementById('deptChart');
+    if (ctxDept && deptLabels.length > 0) {
+        new Chart(ctxDept, {
+            type: 'bar',
+            data: {
+                labels: deptLabels,
+                datasets: [{
+                    label: 'Active Staff Count',
+                    data: deptValues,
+                    backgroundColor: '#2563eb',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 }
+                    }
+                }
+            }
+        });
+    }
+
+    // 2. Attendance Status Doughnut Chart
+    const ctxAtt = document.getElementById('attendanceDoughnutChart');
+    if (ctxAtt) {
+        new Chart(ctxAtt, {
+            type: 'doughnut',
+            data: {
+                labels: ['Present', 'Absent', 'On Leave'],
+                datasets: [{
+                    data: [{{ present_today|default:0 }}, {{ absent_today|default:0 }}, {{ on_leave_today|default:0 }}],
+                    backgroundColor: ['#10b981', '#f43f5e', '#f59e0b'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Leave Balances - HR Automation{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1 small">
+                <li class="breadcrumb-item"><a href="{% url 'leave_management:leave_list' %}">Leave Requests</a></li>
+                <li class="breadcrumb-item active">Balances</li>
+            </ol>
+        </nav>
+        <h4 class="fw-bold mb-0">Annual Leave Balances Ledger</h4>
+    </div>
+    <a href="{% url 'leave_management:leave_apply' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-calendar-plus me-1"></i> Apply for Leave
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Employee ID</th>
+                    <th>Employee Name</th>
+                    <th>Department</th>
+                    <th>Leave Type</th>
+                    <th>Year</th>
+                    <th>Allocated</th>
+                    <th>Used</th>
+                    <th>Remaining Balance</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in balances %}
+                <tr>
+                    <td><span class="badge bg-light text-dark border">{{ b.employee.employee_id }}</span></td>
+                    <td class="fw-semibold">{{ b.employee.full_name }}</td>
+                    <td>{{ b.employee.department.code }}</td>
+                    <td><span class="badge bg-primary-subtle text-primary">{{ b.leave_type.name }} ({{ b.leave_type.code }})</span></td>
+                    <td>{{ b.year }}</td>
+                    <td>{{ b.total_allocated|floatformat:1 }}</td>
+                    <td class="text-danger fw-semibold">{{ b.used|floatformat:1 }}</td>
+                    <td class="text-success fw-bold">{{ b.remaining|floatformat:1 }} days</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-4 text-muted">No leave balance records found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

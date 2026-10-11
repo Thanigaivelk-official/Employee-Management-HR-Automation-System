@@ -56,23 +56,23 @@
                         <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">Earnings Breakdown</h6>
                         <div class="d-flex justify-content-between small mb-2">
                             <span class="text-muted">Basic Salary</span>
-                            <span class="fw-semibold">${{ payroll.basic_salary:,.2f }}</span>
+                            <span class="fw-semibold">${{ payroll.basic_salary|floatformat:2 }}</span>
                         </div>
                         <div class="d-flex justify-content-between small mb-2">
                             <span class="text-muted">House Rent Allowance (HRA)</span>
-                            <span class="fw-semibold">${{ payroll.hra:,.2f }}</span>
+                            <span class="fw-semibold">${{ payroll.hra|floatformat:2 }}</span>
                         </div>
                         <div class="d-flex justify-content-between small mb-2">
                             <span class="text-muted">Allowances (Transport, Medical, Special)</span>
-                            <span class="fw-semibold">${{ payroll.allowances_total:,.2f }}</span>
+                            <span class="fw-semibold">${{ payroll.allowances_total|floatformat:2 }}</span>
                         </div>
                         <div class="d-flex justify-content-between small mb-2">
                             <span class="text-muted">Bonus / Incentives</span>
-                            <span class="fw-semibold">${{ payroll.bonus:,.2f }}</span>
+                            <span class="fw-semibold">${{ payroll.bonus|floatformat:2 }}</span>
                         </div>
                         <div class="d-flex justify-content-between fw-bold pt-2 border-top mt-3">
                             <span>Total Gross Earnings</span>
-                            <span class="text-primary">${{ payroll.gross_salary:,.2f }}</span>
+                            <span class="text-primary">${{ payroll.gross_salary|floatformat:2 }}</span>
                         </div>
                     </div>
                 </div>
@@ -83,19 +83,19 @@
                         <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">Statutory &amp; Leave Deductions</h6>
                         <div class="d-flex justify-content-between small mb-2">
                             <span class="text-muted">Provident Fund (PF)</span>
-                            <span class="fw-semibold text-danger">-${{ payroll.pf_deduction:,.2f }}</span>
+                            <span class="fw-semibold text-danger">-${{ payroll.pf_deduction|floatformat:2 }}</span>
                         </div>
                         <div class="d-flex justify-content-between small mb-2">
                             <span class="text-muted">Professional / State Tax</span>
-                            <span class="fw-semibold text-danger">-${{ payroll.tax_deduction:,.2f }}</span>
+                            <span class="fw-semibold text-danger">-${{ payroll.tax_deduction|floatformat:2 }}</span>
                         </div>
                         <div class="d-flex justify-content-between small mb-2">
                             <span class="text-muted">Unpaid Absence Adjustments</span>
-                            <span class="fw-semibold text-danger">-${{ payroll.unpaid_leave_deduction:,.2f }}</span>
+                            <span class="fw-semibold text-danger">-${{ payroll.unpaid_leave_deduction|floatformat:2 }}</span>
                         </div>
                         <div class="d-flex justify-content-between fw-bold pt-2 border-top mt-3">
                             <span>Total Deductions</span>
-                            <span class="text-danger">-${{ payroll.total_deductions:,.2f }}</span>
+                            <span class="text-danger">-${{ payroll.total_deductions|floatformat:2 }}</span>
                         </div>
                     </div>
                 </div>
@@ -105,7 +105,7 @@
             <div class="p-3 bg-success bg-opacity-10 rounded border border-success d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <span class="text-muted small text-uppercase fw-bold">Net Take-Home Remuneration</span>
-                    <h3 class="fw-bold text-success mb-0">${{ payroll.net_salary:,.2f }}</h3>
+                    <h3 class="fw-bold text-success mb-0">${{ payroll.net_salary|floatformat:2 }}</h3>
                 </div>
                 <div>
                     <span class="badge bg-success px-3 py-2">Status: {{ payroll.get_status_display }}</span>

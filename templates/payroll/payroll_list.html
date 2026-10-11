@@ -83,9 +83,9 @@
                     </td>
                     <td class="small">{{ p.employee.department.code }}</td>
                     <td class="small">{{ p.month }}/{{ p.year }}</td>
-                    <td class="small">${{ p.gross_salary:,.2f }}</td>
-                    <td class="small text-danger">-${{ p.total_deductions:,.2f }}</td>
-                    <td class="fw-bold text-success">${{ p.net_salary:,.2f }}</td>
+                    <td class="small">${{ p.gross_salary|floatformat:2 }}</td>
+                    <td class="small text-danger">-${{ p.total_deductions|floatformat:2 }}</td>
+                    <td class="fw-bold text-success">${{ p.net_salary|floatformat:2 }}</td>
                     <td>
                         <span class="badge bg-success-subtle text-success">{{ p.get_status_display }}</span>
                     </td>

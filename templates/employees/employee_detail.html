@@ -119,7 +119,7 @@
     <div class="card-header bg-white d-flex justify-content-between align-items-center">
         <span class="fw-bold"><i class="bi bi-shield-lock me-2 text-success"></i>Confidential Payroll &amp; Payslips</span>
         {% if salary_structure %}
-        <span class="badge bg-light text-dark border">Base: ${{ salary_structure.basic_salary:,.2f }} | Monthly Gross: ${{ salary_structure.standard_gross_monthly:,.2f }}</span>
+        <span class="badge bg-light text-dark border">Base: ${{ salary_structure.basic_salary|floatformat:2 }} | Monthly Gross: ${{ salary_structure.standard_gross_monthly|floatformat:2 }}</span>
         {% endif %}
     </div>
     <div class="card-body p-0">
@@ -141,9 +141,9 @@
                     <tr>
                         <td class="fw-semibold small"><a href="{% url 'payroll:payroll_detail' p.pk %}">{{ p.payslip_number }}</a></td>
                         <td>{{ p.month }}/{{ p.year }}</td>
-                        <td>${{ p.gross_salary:,.2f }}</td>
-                        <td class="text-danger">-${{ p.total_deductions:,.2f }}</td>
-                        <td class="fw-bold text-success">${{ p.net_salary:,.2f }}</td>
+                        <td>${{ p.gross_salary|floatformat:2 }}</td>
+                        <td class="text-danger">-${{ p.total_deductions|floatformat:2 }}</td>
+                        <td class="fw-bold text-success">${{ p.net_salary|floatformat:2 }}</td>
                         <td><span class="badge bg-success-subtle text-success">{{ p.get_status_display }}</span></td>
                         <td class="text-end">
                             <a href="{% url 'payroll:payslip_pdf' p.pk %}" class="btn btn-outline-danger btn-sm py-0 px-2">

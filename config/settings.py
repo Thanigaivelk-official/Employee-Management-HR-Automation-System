@@ -192,9 +192,15 @@ STORAGES = {
         'BACKEND': 'django.core.files.storage.FileSystemStorage',
     },
     'staticfiles': {
-        'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage',
+        'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
     },
 }
+
+try:
+    import whitenoise
+    STORAGES['staticfiles']['BACKEND'] = 'whitenoise.storage.CompressedStaticFilesStorage'
+except ImportError:
+    pass
 
 # Media files (Profile pictures, leave attachments, payslips)
 MEDIA_URL = '/media/'

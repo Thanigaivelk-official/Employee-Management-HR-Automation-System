@@ -8,7 +8,10 @@ and fallback SQLite.
 import os
 from pathlib import Path
 
-import dj_database_url
+try:
+    import dj_database_url
+except ImportError:
+    dj_database_url = None
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -82,8 +85,15 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    # Serves static files in production (must come right after SecurityMiddleware)
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+]
+
+try:
+    import whitenoise
+    MIDDLEWARE.append('whitenoise.middleware.WhiteNoiseMiddleware')
+except ImportError:
+    pass
+
+MIDDLEWARE += [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -118,7 +128,7 @@ ASGI_APPLICATION = 'config.asgi.application'
 # Priority: DATABASE_URL (Render PostgreSQL etc.) -> MySQL 8.x -> SQLite fallback
 USE_MYSQL = env_bool('USE_MYSQL', False)
 
-if os.environ.get('DATABASE_URL'):
+if os.environ.get('DATABASE_URL') and dj_database_url:
     DATABASES = {
         'default': dj_database_url.config(conn_max_age=600),
     }

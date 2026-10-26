@@ -11,7 +11,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <!-- Custom Stylesheet -->
+    <!-- Custom Design System Stylesheet -->
     <link href="{% static 'css/custom.css' %}" rel="stylesheet">
 
     <!-- Chart.js -->
@@ -20,11 +20,14 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+<!-- Accessible Skip Link -->
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
 <div class="d-flex" id="wrapper">
     <!-- Sidebar Navigation -->
-    <nav id="sidebar-wrapper">
+    <nav id="sidebar-wrapper" aria-label="Main Navigation">
         <div class="sidebar-brand">
-            <i class="bi bi-shield-check text-primary me-2 fs-4"></i>
+            <i class="bi bi-shield-check text-primary me-2 fs-4" aria-hidden="true"></i>
             <span>HR Automation</span>
         </div>
 
@@ -32,7 +35,7 @@
             <li class="sidebar-heading">Core</li>
             <li class="sidebar-item">
                 <a href="{% url 'dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-                    <i class="bi bi-grid-1x2-fill"></i>
+                    <i class="bi bi-grid-1x2-fill" aria-hidden="true"></i>
                     <span>Dashboard</span>
                 </a>
             </li>
@@ -40,13 +43,13 @@
             <li class="sidebar-heading">Workforce</li>
             <li class="sidebar-item">
                 <a href="{% url 'employees:employee_list' %}" class="sidebar-link {% if 'employees' in request.path %}active{% endif %}">
-                    <i class="bi bi-people-fill"></i>
+                    <i class="bi bi-people-fill" aria-hidden="true"></i>
                     <span>Employees</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="{% url 'departments:department_list' %}" class="sidebar-link {% if 'departments' in request.path %}active{% endif %}">
-                    <i class="bi bi-building"></i>
+                    <i class="bi bi-building" aria-hidden="true"></i>
                     <span>Departments</span>
                 </a>
             </li>
@@ -54,13 +57,13 @@
             <li class="sidebar-heading">Operations</li>
             <li class="sidebar-item">
                 <a href="{% url 'attendance:attendance_list' %}" class="sidebar-link {% if 'attendance' in request.path %}active{% endif %}">
-                    <i class="bi bi-clock-history"></i>
+                    <i class="bi bi-clock-history" aria-hidden="true"></i>
                     <span>Attendance</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="{% url 'leave_management:leave_list' %}" class="sidebar-link {% if 'leave' in request.path %}active{% endif %}">
-                    <i class="bi bi-calendar2-check"></i>
+                    <i class="bi bi-calendar2-check" aria-hidden="true"></i>
                     <span>Leave Requests</span>
                 </a>
             </li>
@@ -68,7 +71,7 @@
             {% if not user.is_only_employee_role or user.is_authenticated %}
             <li class="sidebar-item">
                 <a href="{% url 'payroll:payroll_list' %}" class="sidebar-link {% if 'payroll' in request.path %}active{% endif %}">
-                    <i class="bi bi-cash-stack"></i>
+                    <i class="bi bi-cash-stack" aria-hidden="true"></i>
                     <span>Payroll</span>
                 </a>
             </li>
@@ -78,7 +81,7 @@
             <li class="sidebar-heading">Intelligence</li>
             <li class="sidebar-item">
                 <a href="{% url 'reports:report_dashboard' %}" class="sidebar-link {% if 'reports' in request.path %}active{% endif %}">
-                    <i class="bi bi-file-earmark-bar-graph"></i>
+                    <i class="bi bi-file-earmark-bar-graph" aria-hidden="true"></i>
                     <span>Reports &amp; Exports</span>
                 </a>
             </li>
@@ -89,14 +92,14 @@
             {% if user.is_super_admin_role %}
             <li class="sidebar-item">
                 <a href="{% url 'accounts:user_list' %}" class="sidebar-link {% if 'users' in request.path %}active{% endif %}">
-                    <i class="bi bi-person-gear"></i>
+                    <i class="bi bi-person-gear" aria-hidden="true"></i>
                     <span>User Accounts</span>
                 </a>
             </li>
             {% endif %}
             <li class="sidebar-item">
                 <a href="{% url 'audit:audit_list' %}" class="sidebar-link {% if 'audit' in request.path %}active{% endif %}">
-                    <i class="bi bi-journal-text"></i>
+                    <i class="bi bi-journal-text" aria-hidden="true"></i>
                     <span>Audit Trail</span>
                 </a>
             </li>
@@ -105,13 +108,13 @@
             <li class="sidebar-heading">Account</li>
             <li class="sidebar-item">
                 <a href="{% url 'accounts:profile' %}" class="sidebar-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
-                    <i class="bi bi-person-circle"></i>
+                    <i class="bi bi-person-circle" aria-hidden="true"></i>
                     <span>My Profile</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="{% url 'accounts:logout' %}" class="sidebar-link text-danger-emphasis">
-                    <i class="bi bi-box-arrow-right text-danger"></i>
+                    <i class="bi bi-box-arrow-right text-danger" aria-hidden="true"></i>
                     <span>Sign Out</span>
                 </a>
             </li>
@@ -121,28 +124,29 @@
     <!-- Main Content Area -->
     <div id="page-content-wrapper">
         <!-- Top Navigation Bar -->
-        <header class="top-navbar d-flex align-items-center justify-content-between">
+        <header class="top-navbar d-flex align-items-center justify-content-between" role="banner">
             <div class="d-flex align-items-center">
-                <button class="btn btn-outline-secondary btn-sm me-3 d-lg-none" id="sidebarToggle">
-                    <i class="bi bi-list fs-5"></i>
+                <button class="btn btn-outline-secondary btn-sm me-3 d-lg-none touch-target" id="sidebarToggle" aria-label="Toggle navigation sidebar">
+                    <i class="bi bi-list fs-5" aria-hidden="true"></i>
                 </button>
                 <div class="d-none d-md-flex align-items-center text-muted small">
-                    <i class="bi bi-calendar3 me-1"></i>
+                    <i class="bi bi-calendar3 me-1" aria-hidden="true"></i>
                     <span>{% if today %}{{ today|date:"l, F j, Y" }}{% else %}{% now "l, F j, Y" %}{% endif %}</span>
-                    <span class="mx-2">•</span>
-                    <i class="bi bi-clock me-1"></i>
-                    <span id="live-clock">--:--:--</span>
+                    <span class="mx-2" aria-hidden="true">•</span>
+                    <i class="bi bi-clock me-1" aria-hidden="true"></i>
+                    <span id="live-clock" aria-live="off">--:--:--</span>
                 </div>
             </div>
 
             <div class="d-flex align-items-center gap-3">
                 <!-- Notifications Bell Dropdown -->
                 <div class="dropdown">
-                    <button class="btn btn-light position-relative rounded-circle p-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-bell fs-5 text-secondary"></i>
+                    <button class="btn btn-light position-relative rounded-circle p-2 touch-target" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="View notifications">
+                        <i class="bi bi-bell fs-5 text-secondary" aria-hidden="true"></i>
                         {% if unread_notifications_count > 0 %}
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                             {{ unread_notifications_count }}
+                            <span class="visually-hidden">unread notifications</span>
                         </span>
                         {% endif %}
                     </button>
@@ -170,35 +174,35 @@
 
                 <!-- User Profile Menu Dropdown -->
                 <div class="dropdown">
-                    <button class="btn btn-light d-flex align-items-center gap-2 border rounded-pill py-1 px-2" type="button" data-bs-toggle="dropdown">
-                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 0.85rem; font-weight: 600;">
+                    <button class="btn btn-light d-flex align-items-center gap-2 border rounded-pill py-1 px-2" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User profile settings">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 0.85rem; font-weight: 600;" aria-hidden="true">
                             {{ user.first_name|first|default:user.username|first|upper }}
                         </div>
                         <div class="text-start d-none d-sm-block me-1">
                             <div class="small fw-bold lh-1">{{ user.get_full_name|default:user.username }}</div>
                             <span class="badge bg-secondary-subtle text-secondary-emphasis" style="font-size: 0.65rem;">{{ user.get_role_display }}</span>
                         </div>
-                        <i class="bi bi-chevron-down small text-muted"></i>
+                        <i class="bi bi-chevron-down small text-muted" aria-hidden="true"></i>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-                        <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="bi bi-person me-2"></i>Profile</a></li>
-                        <li><a class="dropdown-item" href="{% url 'accounts:password_change' %}"><i class="bi bi-key me-2"></i>Change Password</a></li>
+                        <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="bi bi-person me-2" aria-hidden="true"></i>Profile</a></li>
+                        <li><a class="dropdown-item" href="{% url 'accounts:password_change' %}"><i class="bi bi-key me-2" aria-hidden="true"></i>Change Password</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
+                        <li><a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}"><i class="bi bi-box-arrow-right me-2" aria-hidden="true"></i>Sign Out</a></li>
                     </ul>
                 </div>
             </div>
         </header>
 
         <!-- Main Workspace Container -->
-        <main class="main-container">
+        <main class="main-container" id="main-content" tabindex="-1">
             <!-- Toast / Alerts Messages -->
             {% if messages %}
             <div class="row mb-3">
                 <div class="col-12">
                     {% for message in messages %}
                     <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm d-flex align-items-center" role="alert">
-                        <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+                        <i class="bi bi-info-circle-fill me-2 fs-5" aria-hidden="true"></i>
                         <div>{{ message }}</div>
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
@@ -211,7 +215,7 @@
         </main>
 
         <!-- Footer -->
-        <footer class="bg-white border-top py-3 px-4 text-center text-muted small mt-auto">
+        <footer class="bg-white border-top py-3 px-4 text-center text-muted small mt-auto" role="contentinfo">
             &copy; 2026 Employee Management &amp; HR Automation System. Built with Python, Django, MySQL &amp; Bootstrap.
         </footer>
     </div>

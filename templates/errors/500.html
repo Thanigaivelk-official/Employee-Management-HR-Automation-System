@@ -1,16 +1,18 @@
 {% extends 'base.html' %}
 
-{% block title %}500 Internal Server Error{% endblock %}
+{% block title %}500 Server Error - HR Automation{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center text-center py-5">
     <div class="col-md-6">
-        <div class="display-1 fw-bold text-warning mb-3">500</div>
-        <h3 class="fw-bold text-dark">Internal Server Error</h3>
-        <p class="text-muted">An unexpected condition occurred while processing this request. The event has been logged for system diagnostics.</p>
-        <a href="{% url 'dashboard' %}" class="btn btn-primary px-4 mt-3">
-            <i class="bi bi-arrow-left me-1"></i> Return to Dashboard
-        </a>
+        <div class="empty-state border-0">
+            <div class="display-1 fw-bold text-danger opacity-25 mb-2 font-monospace">500</div>
+            <h3 class="fw-bold text-dark mb-2">Unexpected Internal Error</h3>
+            <p class="text-muted mb-4">An unexpected server error occurred while processing this transaction. The issue has been captured in the internal log for administrative review.</p>
+            <a href="{% url 'dashboard' %}" class="btn btn-primary px-4">
+                <i class="bi bi-arrow-left me-1"></i> Return to Workspace Dashboard
+            </a>
+        </div>
     </div>
 </div>
 {% endblock %}

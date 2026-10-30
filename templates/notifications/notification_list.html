@@ -3,10 +3,10 @@
 {% block title %}Notifications - HR Automation{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="page-header">
     <div>
-        <h4 class="fw-bold mb-1">Notifications</h4>
-        <p class="text-muted small mb-0">System alerts, workflow updates, and administrative notices.</p>
+        <h2 class="page-title">Notifications &amp; Activity Alerts</h2>
+        <p class="page-subtitle">Personal announcements, leave approvals, payroll generation confirmations, and security alerts.</p>
     </div>
     {% if notifications %}
     <form action="{% url 'notifications:mark_all_read' %}" method="post">
@@ -18,30 +18,30 @@
     {% endif %}
 </div>
 
-<div class="card shadow-sm">
-    <div class="list-group list-group-flush">
+<div class="card shadow-sm border-0">
+    <div class="list-group list-group-flush rounded-3">
         {% for n in notifications %}
-        <div class="list-group-item p-3 d-flex justify-content-between align-items-start {% if not n.is_read %}bg-light bg-opacity-50{% endif %}">
-            <div class="d-flex gap-3">
-                <div class="mt-1">
+        <div class="list-group-item p-3 d-flex justify-content-between align-items-center {% if not n.is_read %}bg-primary-subtle bg-opacity-25 border-start border-3 border-primary{% endif %}">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle p-2 bg-light border d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
                     {% if n.notification_type == 'LEAVE' %}
-                    <i class="bi bi-calendar2-check text-warning fs-4"></i>
+                    <i class="bi bi-calendar2-check text-warning fs-5"></i>
                     {% elif n.notification_type == 'PAYROLL' %}
-                    <i class="bi bi-cash-stack text-success fs-4"></i>
+                    <i class="bi bi-cash-stack text-success fs-5"></i>
                     {% elif n.notification_type == 'ATTENDANCE' %}
-                    <i class="bi bi-clock-history text-primary fs-4"></i>
+                    <i class="bi bi-clock-history text-primary fs-5"></i>
                     {% else %}
-                    <i class="bi bi-bell text-secondary fs-4"></i>
+                    <i class="bi bi-bell text-secondary fs-5"></i>
                     {% endif %}
                 </div>
                 <div>
                     <div class="fw-bold text-dark d-flex align-items-center gap-2">
                         {{ n.title }}
-                        {% if not n.is_read %}<span class="badge bg-primary" style="font-size: 0.65rem;">New</span>{% endif %}
+                        {% if not n.is_read %}<span class="badge badge-present" style="font-size: 0.65rem;">New</span>{% endif %}
                     </div>
                     <div class="text-secondary small mt-1">{{ n.message }}</div>
                     <div class="text-muted small mt-1" style="font-size: 0.75rem;">
-                        <i class="bi bi-clock me-1"></i> {{ n.created_at|date:"M d, Y H:i" }} ({{ n.created_at|timesince }} ago)
+                        <i class="bi bi-clock me-1"></i> {{ n.created_at|date:"M d, Y H:i" }} &bull; {{ n.created_at|timesince }} ago
                     </div>
                 </div>
             </div>
@@ -64,23 +64,26 @@
             </div>
         </div>
         {% empty %}
-        <div class="text-center py-5 text-muted">
-            <i class="bi bi-bell-slash fs-1 d-block mb-2"></i>
-            <p>You have no notifications at this time.</p>
+        <div class="text-center py-5">
+            <div class="empty-state border-0 p-3">
+                <i class="bi bi-bell-slash empty-state-icon"></i>
+                <div class="empty-state-title">No notifications</div>
+                <div class="empty-state-text">You are all caught up! No unread notifications or system alerts at this time.</div>
+            </div>
         </div>
         {% endfor %}
     </div>
 
     {% if is_paginated %}
-    <div class="card-footer bg-white d-flex justify-content-between align-items-center py-2">
+    <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
         <small class="text-muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</small>
         <ul class="pagination pagination-sm mb-0">
             {% if page_obj.has_previous %}
-            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo; Previous</a></li>
             {% endif %}
             <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
             {% if page_obj.has_next %}
-            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next &raquo;</a></li>
             {% endif %}
         </ul>
     </div>

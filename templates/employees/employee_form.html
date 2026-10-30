@@ -3,117 +3,152 @@
 {% block title %}{% if form.instance.pk %}Edit Employee{% else %}Add Employee{% endif %} - HR Automation{% endblock %}
 
 {% block content %}
+<div class="page-header justify-content-center">
+    <div class="col-lg-10">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1 small">
+                <li class="breadcrumb-item"><a href="{% url 'employees:employee_list' %}">Employees</a></li>
+                <li class="breadcrumb-item active">{% if form.instance.pk %}Edit Dossier{% else %}New Registration{% endif %}</li>
+            </ol>
+        </nav>
+        <h2 class="page-title">{% if form.instance.pk %}Edit Employee Dossier: {{ form.instance.full_name }}{% else %}Register New Employee{% endif %}</h2>
+        <p class="page-subtitle">Configure employee identity, contact channels, department hierarchy, and compensation structure.</p>
+    </div>
+</div>
+
 <div class="row justify-content-center">
     <div class="col-lg-10">
-        <div class="card shadow-sm">
-            <div class="card-header bg-white">
-                <span class="fw-bold">{% if form.instance.pk %}Edit Employee Dossier: {{ form.instance.full_name }}{% else %}Register New Employee{% endif %}</span>
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <span class="fw-bold"><i class="bi bi-person-badge-fill me-2 text-primary"></i>Employee Information Form</span>
             </div>
-            <div class="card-body">
-                <form method="post" enctype="multipart/form-data">
+            <div class="card-body p-4">
+                <form method="post" enctype="multipart/form-data" novalidate>
                     {% csrf_token %}
 
-                    <h6 class="fw-bold text-primary mb-3"><i class="bi bi-person me-2"></i>Personal Information</h6>
+                    <!-- Section 1 -->
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div class="bg-primary-subtle text-primary rounded-circle p-2 d-inline-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                            <i class="bi bi-person"></i>
+                        </div>
+                        <h5 class="fw-bold text-dark mb-0">Personal &amp; Identity Details</h5>
+                    </div>
+
                     <div class="row g-3 mb-4">
                         <div class="col-md-3">
-                            <label class="form-label small fw-semibold">Employee ID</label>
+                            <label class="form-label" for="{{ form.employee_id.id_for_label }}">Employee ID</label>
                             {{ form.employee_id }}
-                            <div class="form-text small">Leave blank to auto-generate</div>
+                            <div class="form-text">Leave blank to auto-generate (e.g. EMP-2026-0014)</div>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-semibold">First Name *</label>
+                            <label class="form-label" for="{{ form.first_name.id_for_label }}">First Name <span class="text-danger">*</span></label>
                             {{ form.first_name }}
-                            {% for error in form.first_name.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            {% for error in form.first_name.errors %}<div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>{% endfor %}
                         </div>
                         <div class="col-md-5">
-                            <label class="form-label small fw-semibold">Last Name *</label>
+                            <label class="form-label" for="{{ form.last_name.id_for_label }}">Last Name <span class="text-danger">*</span></label>
                             {{ form.last_name }}
-                            {% for error in form.last_name.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            {% for error in form.last_name.errors %}<div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>{% endfor %}
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-semibold">Official Email *</label>
+                            <label class="form-label" for="{{ form.email.id_for_label }}">Official Email <span class="text-danger">*</span></label>
                             {{ form.email }}
-                            {% for error in form.email.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            {% for error in form.email.errors %}<div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>{% endfor %}
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-semibold">Phone Number *</label>
+                            <label class="form-label" for="{{ form.phone.id_for_label }}">Phone Number <span class="text-danger">*</span></label>
                             {{ form.phone }}
-                            {% for error in form.phone.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            {% for error in form.phone.errors %}<div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>{% endfor %}
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-semibold">Date of Birth</label>
+                            <label class="form-label" for="{{ form.date_of_birth.id_for_label }}">Date of Birth</label>
                             {{ form.date_of_birth }}
-                            {% for error in form.date_of_birth.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            {% for error in form.date_of_birth.errors %}<div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>{% endfor %}
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-semibold">Gender</label>
+                            <label class="form-label" for="{{ form.gender.id_for_label }}">Gender</label>
                             {{ form.gender }}
                         </div>
                         <div class="col-md-8">
-                            <label class="form-label small fw-semibold">Residential Address</label>
+                            <label class="form-label" for="{{ form.address.id_for_label }}">Residential Address</label>
                             {{ form.address }}
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label small fw-semibold">Emergency Contact</label>
+                            <label class="form-label" for="{{ form.emergency_contact.id_for_label }}">Emergency Contact Name &amp; Phone</label>
                             {{ form.emergency_contact }}
                         </div>
                     </div>
 
-                    <h6 class="fw-bold text-primary mb-3 pt-3 border-top"><i class="bi bi-briefcase me-2"></i>Employment &amp; Organization</h6>
+                    <!-- Section 2 -->
+                    <div class="d-flex align-items-center gap-2 mb-3 pt-3 border-top">
+                        <div class="bg-primary-subtle text-primary rounded-circle p-2 d-inline-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                            <i class="bi bi-briefcase"></i>
+                        </div>
+                        <h5 class="fw-bold text-dark mb-0">Employment &amp; Departmental Hierarchy</h5>
+                    </div>
+
                     <div class="row g-3 mb-4">
                         <div class="col-md-4">
-                            <label class="form-label small fw-semibold">Department *</label>
+                            <label class="form-label" for="{{ form.department.id_for_label }}">Department <span class="text-danger">*</span></label>
                             {{ form.department }}
-                            {% for error in form.department.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            {% for error in form.department.errors %}<div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>{% endfor %}
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-semibold">Designation *</label>
+                            <label class="form-label" for="{{ form.designation.id_for_label }}">Official Designation / Title <span class="text-danger">*</span></label>
                             {{ form.designation }}
-                            {% for error in form.designation.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            {% for error in form.designation.errors %}<div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>{% endfor %}
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-semibold">Reporting Manager</label>
+                            <label class="form-label" for="{{ form.reporting_manager.id_for_label }}">Reporting Manager</label>
                             {{ form.reporting_manager }}
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-semibold">Date of Joining *</label>
+                            <label class="form-label" for="{{ form.date_of_joining.id_for_label }}">Date of Joining <span class="text-danger">*</span></label>
                             {{ form.date_of_joining }}
-                            {% for error in form.date_of_joining.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            {% for error in form.date_of_joining.errors %}<div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>{% endfor %}
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-semibold">Employment Type</label>
+                            <label class="form-label" for="{{ form.employment_type.id_for_label }}">Employment Type</label>
                             {{ form.employment_type }}
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-semibold">Status</label>
+                            <label class="form-label" for="{{ form.employment_status.id_for_label }}">Current Employment Status</label>
                             {{ form.employment_status }}
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-semibold">Basic Monthly Salary ($) *</label>
+                            <label class="form-label" for="{{ form.basic_salary.id_for_label }}">Basic Monthly Salary ($) <span class="text-danger">*</span></label>
                             {{ form.basic_salary }}
                         </div>
                     </div>
 
                     {% if not form.instance.pk %}
-                    <h6 class="fw-bold text-primary mb-3 pt-3 border-top"><i class="bi bi-shield-lock me-2"></i>User Access Provisioning</h6>
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <div class="form-check mt-2">
+                    <!-- Section 3 -->
+                    <div class="d-flex align-items-center gap-2 mb-3 pt-3 border-top">
+                        <div class="bg-primary-subtle text-primary rounded-circle p-2 d-inline-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                            <i class="bi bi-shield-lock"></i>
+                        </div>
+                        <h5 class="fw-bold text-dark mb-0">System Account &amp; Access Provisioning</h5>
+                    </div>
+
+                    <div class="row g-3 mb-4 p-3 bg-light rounded-3 border">
+                        <div class="col-md-7">
+                            <div class="form-check form-switch mt-1">
                                 {{ form.create_user_account }}
-                                <label class="form-check-label small fw-semibold" for="{{ form.create_user_account.id_for_label }}">
-                                    Create Login Account (Default initial password: <code>Password@123</code>)
+                                <label class="form-check-label fw-semibold" for="{{ form.create_user_account.id_for_label }}">
+                                    Create portal account with default credentials
                                 </label>
+                                <div class="form-text">Temporary password: <code>Password@123</code> (Employee prompted on login)</div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label small fw-semibold">Assigned System Role</label>
+                        <div class="col-md-5">
+                            <label class="form-label" for="{{ form.user_role.id_for_label }}">Assigned Access Role</label>
                             {{ form.user_role }}
                         </div>
                     </div>
                     {% endif %}
 
-                    <div class="d-flex justify-content-between mt-4 pt-3 border-top">
-                        <a href="{% url 'employees:employee_list' %}" class="btn btn-light btn-sm">Cancel</a>
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        <a href="{% url 'employees:employee_list' %}" class="btn btn-light border btn-sm">Cancel</a>
                         <button type="submit" class="btn btn-primary btn-sm px-4">
                             <i class="bi bi-check-lg me-1"></i> Save Employee Dossier
                         </button>

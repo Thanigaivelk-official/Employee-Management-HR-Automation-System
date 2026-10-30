@@ -3,54 +3,69 @@
 {% block title %}{% if form.instance.pk %}Edit Department{% else %}Add Department{% endif %} - HR Automation{% endblock %}
 
 {% block content %}
+<div class="page-header justify-content-center">
+    <div class="col-lg-7">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1 small">
+                <li class="breadcrumb-item"><a href="{% url 'departments:department_list' %}">Departments</a></li>
+                <li class="breadcrumb-item active">{% if form.instance.pk %}Edit{% else %}New{% endif %}</li>
+            </ol>
+        </nav>
+        <h2 class="page-title">{% if form.instance.pk %}Edit Department: {{ form.instance.name }}{% else %}Create New Department{% endif %}</h2>
+        <p class="page-subtitle">Configure departmental title, operational code, division lead, and active status.</p>
+    </div>
+</div>
+
 <div class="row justify-content-center">
     <div class="col-lg-7">
-        <div class="card shadow-sm">
-            <div class="card-header bg-white">
-                <span class="fw-bold">{% if form.instance.pk %}Edit Department: {{ form.instance.name }}{% else %}Create Department{% endif %}</span>
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <span class="fw-bold"><i class="bi bi-building me-2 text-primary"></i>Department Configuration</span>
             </div>
-            <div class="card-body">
-                <form method="post">
+            <div class="card-body p-4">
+                <form method="post" novalidate>
                     {% csrf_token %}
                     <div class="row g-3">
                         <div class="col-md-8">
-                            <label class="form-label small fw-semibold">Department Name</label>
+                            <label class="form-label" for="{{ form.name.id_for_label }}">Department Name <span class="text-danger">*</span></label>
                             {{ form.name }}
                             {% for error in form.name.errors %}
-                            <div class="text-danger small mt-1">{{ error }}</div>
+                            <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>
                             {% endfor %}
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-semibold">Code</label>
+                            <label class="form-label" for="{{ form.code.id_for_label }}">Code (e.g. ENG, HR) <span class="text-danger">*</span></label>
                             {{ form.code }}
                             {% for error in form.code.errors %}
-                            <div class="text-danger small mt-1">{{ error }}</div>
+                            <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>
                             {% endfor %}
                         </div>
                         <div class="col-12">
-                            <label class="form-label small fw-semibold">Description</label>
+                            <label class="form-label" for="{{ form.description.id_for_label }}">Department Purpose &amp; Description</label>
                             {{ form.description }}
                             {% for error in form.description.errors %}
-                            <div class="text-danger small mt-1">{{ error }}</div>
+                            <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>
                             {% endfor %}
                         </div>
                         <div class="col-md-8">
-                            <label class="form-label small fw-semibold">Department Manager</label>
+                            <label class="form-label" for="{{ form.manager.id_for_label }}">Department Lead / Manager</label>
                             {{ form.manager }}
                             {% for error in form.manager.errors %}
-                            <div class="text-danger small mt-1">{{ error }}</div>
+                            <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>
                             {% endfor %}
                         </div>
-                        <div class="col-md-4 d-flex align-items-center mt-4">
-                            <div class="form-check">
+                        <div class="col-md-4 d-flex align-items-center mt-md-4 pt-md-2">
+                            <div class="form-check form-switch">
                                 {{ form.is_active }}
-                                <label class="form-check-label small fw-semibold" for="{{ form.is_active.id_for_label }}">Active Department</label>
+                                <label class="form-check-label fw-semibold" for="{{ form.is_active.id_for_label }}">Active Division</label>
                             </div>
                         </div>
                     </div>
-                    <div class="d-flex justify-content-between mt-4 pt-3 border-top">
-                        <a href="{% url 'departments:department_list' %}" class="btn btn-light btn-sm">Cancel</a>
-                        <button type="submit" class="btn btn-primary btn-sm px-4">Save Department</button>
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        <a href="{% url 'departments:department_list' %}" class="btn btn-light border btn-sm">Cancel</a>
+                        <button type="submit" class="btn btn-primary btn-sm px-4">
+                            <i class="bi bi-check2 me-1"></i> Save Department
+                        </button>
                     </div>
                 </form>
             </div>

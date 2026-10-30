@@ -3,7 +3,7 @@
 {% block title %}Leave Request {{ leave.request_id }} - HR Automation{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="page-header">
     <div>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-1 small">
@@ -11,7 +11,8 @@
                 <li class="breadcrumb-item active">{{ leave.request_id }}</li>
             </ol>
         </nav>
-        <h4 class="fw-bold mb-0">Leave Request: {{ leave.request_id }}</h4>
+        <h2 class="page-title">Leave Request: {{ leave.request_id }}</h2>
+        <p class="page-subtitle">Submitted by {{ leave.employee.full_name }} &bull; Applied on {{ leave.created_at|date:"M d, Y" }}</p>
     </div>
     <!-- Cancel Action for Employee -->
     {% if leave.status == 'PENDING' or leave.status == 'APPROVED' %}
@@ -29,46 +30,52 @@
 <div class="row g-4">
     <!-- Request Details -->
     <div class="col-lg-7">
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                <span class="fw-bold"><i class="bi bi-info-circle me-2 text-primary"></i>Application Details</span>
-                <span class="badge {% if leave.status == 'APPROVED' %}bg-success{% elif leave.status == 'REJECTED' %}bg-danger{% elif leave.status == 'CANCELLED' %}bg-secondary{% else %}bg-warning text-dark{% endif %} fs-6">
-                    {{ leave.get_status_display }}
-                </span>
+        <div class="card shadow-sm mb-4 border-0">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                <span class="fw-bold"><i class="bi bi-info-circle-fill me-2 text-primary"></i>Application Details</span>
+                {% if leave.status == 'APPROVED' %}
+                <span class="badge badge-present fs-6">Approved</span>
+                {% elif leave.status == 'REJECTED' %}
+                <span class="badge badge-absent fs-6">Rejected</span>
+                {% elif leave.status == 'CANCELLED' %}
+                <span class="badge bg-secondary text-white fs-6">Cancelled</span>
+                {% else %}
+                <span class="badge badge-leave fs-6">Pending Review</span>
+                {% endif %}
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 <div class="row g-3">
                     <div class="col-sm-6">
-                        <div class="text-muted small">Employee</div>
-                        <div class="fw-bold"><a href="{% url 'employees:employee_detail' leave.employee.pk %}">{{ leave.employee.full_name }}</a> ({{ leave.employee.employee_id }})</div>
+                        <div class="info-label">Applicant Employee</div>
+                        <div class="info-value"><a href="{% url 'employees:employee_detail' leave.employee.pk %}" class="text-primary text-decoration-none">{{ leave.employee.full_name }}</a> ({{ leave.employee.employee_id }})</div>
                     </div>
                     <div class="col-sm-6">
-                        <div class="text-muted small">Department</div>
-                        <div class="fw-bold">{{ leave.employee.department.name }}</div>
+                        <div class="info-label">Department</div>
+                        <div class="info-value">{{ leave.employee.department.name }}</div>
                     </div>
                     <div class="col-sm-6">
-                        <div class="text-muted small">Leave Category</div>
-                        <span class="badge bg-primary-subtle text-primary">{{ leave.leave_type.name }} ({{ leave.leave_type.code }})</span>
+                        <div class="info-label">Leave Category</div>
+                        <div><span class="badge bg-primary text-white font-monospace">{{ leave.leave_type.name }} ({{ leave.leave_type.code }})</span></div>
                     </div>
                     <div class="col-sm-6">
-                        <div class="text-muted small">Duration</div>
-                        <div class="fw-bold text-dark">{{ leave.days_count }} working day(s)</div>
+                        <div class="info-label">Total Duration</div>
+                        <div class="info-value text-dark fw-bold">{{ leave.days_count }} working day(s)</div>
                     </div>
                     <div class="col-sm-6">
-                        <div class="text-muted small">Start Date</div>
-                        <div class="fw-semibold">{{ leave.start_date|date:"l, F j, Y" }}</div>
+                        <div class="info-label">Start Date</div>
+                        <div class="info-value">{{ leave.start_date|date:"l, F j, Y" }}</div>
                     </div>
                     <div class="col-sm-6">
-                        <div class="text-muted small">End Date</div>
-                        <div class="fw-semibold">{{ leave.end_date|date:"l, F j, Y" }}</div>
+                        <div class="info-label">End Date</div>
+                        <div class="info-value">{{ leave.end_date|date:"l, F j, Y" }}</div>
                     </div>
                     <div class="col-12">
-                        <div class="text-muted small">Applicant's Stated Reason</div>
-                        <div class="p-3 bg-light rounded small mt-1 border">{{ leave.reason }}</div>
+                        <div class="info-label">Applicant Stated Reason</div>
+                        <div class="p-3 bg-light rounded-3 small mt-1 border text-dark">{{ leave.reason }}</div>
                     </div>
                     {% if leave.document %}
                     <div class="col-12">
-                        <div class="text-muted small">Attached Supporting Document</div>
+                        <div class="info-label">Attached Supporting Document</div>
                         <a href="{{ leave.document.url }}" target="_blank" class="btn btn-outline-secondary btn-sm mt-1">
                             <i class="bi bi-paperclip me-1"></i> View Attachment
                         </a>
@@ -79,72 +86,53 @@
         </div>
     </div>
 
-    <!-- Review & Audit Decision Section -->
+    <!-- Manager/Admin Action & Approval Workflow -->
     <div class="col-lg-5">
-        {% if can_review %}
-        <!-- Manager / HR Approval Form -->
-        <div class="card shadow-sm border-warning mb-4">
-            <div class="card-header bg-warning bg-opacity-10 fw-bold text-dark">
-                <i class="bi bi-shield-check me-2"></i>Review Decision Required
+        {% if can_approve and leave.status == 'PENDING' %}
+        <div class="card shadow-sm border-0 mb-4 border-start border-4 border-warning">
+            <div class="card-header bg-white py-3">
+                <span class="fw-bold"><i class="bi bi-shield-check me-2 text-warning"></i>Review &amp; Decision</span>
             </div>
-            <div class="card-body">
-                <form action="{% url 'leave_management:leave_review' leave.pk %}" method="post">
+            <div class="card-body p-4">
+                <form action="{% url 'leave_management:leave_approve' leave.pk %}" method="post">
                     {% csrf_token %}
                     <div class="mb-3">
-                        <label class="form-label small fw-semibold">Decision</label>
-                        <div class="d-flex gap-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="action" id="actionApprove" value="APPROVE" checked>
-                                <label class="form-check-label fw-semibold text-success" for="actionApprove">
-                                    <i class="bi bi-check-circle me-1"></i> Approve
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="action" id="actionReject" value="REJECT">
-                                <label class="form-check-label fw-semibold text-danger" for="actionReject">
-                                    <i class="bi bi-x-circle me-1"></i> Reject
-                                </label>
-                            </div>
-                        </div>
+                        <label class="form-label">Review Remarks / Conditions</label>
+                        <textarea name="remarks" class="form-control form-control-sm" rows="3" placeholder="Add administrative notes or conditions..."></textarea>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">Reviewer Comments / Remarks</label>
-                        <textarea name="comments" class="form-control" rows="3" placeholder="Add optional comments or justification for applicant..."></textarea>
+                    <div class="d-flex gap-2">
+                        <button type="submit" name="action" value="approve" class="btn btn-success flex-grow-1">
+                            <i class="bi bi-check2-circle me-1"></i> Approve Leave
+                        </button>
+                        <button type="submit" name="action" value="reject" class="btn btn-danger flex-grow-1">
+                            <i class="bi bi-x-circle me-1"></i> Reject
+                        </button>
                     </div>
-                    <button type="submit" class="btn btn-primary btn-sm w-100" data-confirm="Confirm and record your decision for this leave request?">
-                        Submit Decision
-                    </button>
                 </form>
             </div>
         </div>
         {% endif %}
 
-        <!-- Resolution History -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-white fw-bold">
-                <i class="bi bi-clock-history me-2 text-secondary"></i>Audit &amp; Decision History
+        <!-- Approval History / Review Info -->
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <span class="fw-bold"><i class="bi bi-clock-history me-2 text-primary"></i>Decision Record</span>
             </div>
-            <div class="card-body">
-                <div class="small mb-2">
-                    <span class="text-muted">Submitted On:</span>
-                    <span class="fw-semibold">{{ leave.created_at|date:"M d, Y H:i" }}</span>
+            <div class="card-body p-4">
+                {% if leave.approved_by %}
+                <div class="mb-3">
+                    <div class="info-label">Reviewed By</div>
+                    <div class="info-value">{{ leave.approved_by.get_full_name|default:leave.approved_by.username }}</div>
+                    <div class="small text-muted">{{ leave.approval_date|date:"M d, Y @ H:i" }}</div>
                 </div>
-                {% if leave.reviewed_by %}
-                <div class="small mb-2">
-                    <span class="text-muted">Reviewed By:</span>
-                    <span class="fw-semibold">{{ leave.reviewed_by.get_full_name|default:leave.reviewed_by.username }}</span>
-                </div>
-                <div class="small mb-2">
-                    <span class="text-muted">Decision Recorded At:</span>
-                    <span class="fw-semibold">{{ leave.reviewed_at|date:"M d, Y H:i" }}</span>
-                </div>
-                <div class="small">
-                    <span class="text-muted">Reviewer Comments:</span>
-                    <div class="p-2 bg-light rounded mt-1 border text-secondary">{{ leave.review_comments|default:"None provided" }}</div>
+                <div>
+                    <div class="info-label">Reviewer Comments</div>
+                    <div class="p-3 bg-light rounded-3 small border">{{ leave.manager_remarks|default:"No specific remarks provided." }}</div>
                 </div>
                 {% else %}
-                <div class="text-muted small py-2">
-                    <i class="bi bi-hourglass me-1"></i> Awaiting administrative review by reporting manager or HR team.
+                <div class="text-center py-4 text-muted small">
+                    <i class="bi bi-hourglass-split fs-2 text-warning mb-2 d-block"></i>
+                    This request is currently waiting for manager/admin approval.
                 </div>
                 {% endif %}
             </div>

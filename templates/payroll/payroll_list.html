@@ -3,10 +3,10 @@
 {% block title %}Payroll Management - HR Automation{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="page-header">
     <div>
-        <h4 class="fw-bold mb-1">Payroll Records &amp; Payslips</h4>
-        <p class="text-muted small mb-0">Monthly payroll calculations, statutory deductions, net payouts, and downloadable payslips.</p>
+        <h2 class="page-title">Payroll Records &amp; Payslips</h2>
+        <p class="page-subtitle">Monthly payroll calculations, statutory deductions, net payouts, and downloadable payslips.</p>
     </div>
     <div class="d-flex gap-2">
         {% if user.is_hr_admin_role %}
@@ -21,44 +21,46 @@
 </div>
 
 <!-- Filters -->
-<div class="card shadow-sm mb-4">
-    <div class="card-body p-3">
-        <form method="get" class="row g-2 align-items-center">
-            <div class="col-md-3">
-                <select name="month" class="form-select form-select-sm">
-                    <option value="">All Months</option>
-                    {% for m_num, m_name in months %}
-                    <option value="{{ m_num }}" {% if request.GET.month == m_num|stringformat:"s" %}selected{% endif %}>{{ m_name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-2">
-                <input type="number" name="year" class="form-control form-control-sm" placeholder="Year" value="{{ request.GET.year|default:current_year }}">
-            </div>
-            {% if user.is_hr_admin_role %}
-            <div class="col-md-3">
-                <select name="department" class="form-select form-select-sm">
-                    <option value="">All Departments</option>
-                    {% for d in departments %}
-                    <option value="{{ d.pk }}" {% if request.GET.department == d.pk|stringformat:"s" %}selected{% endif %}>{{ d.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-2">
-                <input type="text" name="search" class="form-control form-control-sm" placeholder="Name or Payslip #..." value="{{ request.GET.search }}">
-            </div>
-            {% endif %}
-            <div class="col-md-2 d-flex gap-2">
-                <button type="submit" class="btn btn-secondary btn-sm flex-grow-1"><i class="bi bi-filter me-1"></i> Filter</button>
-                <a href="{% url 'payroll:payroll_list' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-counterclockwise"></i></a>
-            </div>
-        </form>
-    </div>
+<div class="filter-card">
+    <form method="get" class="row g-2 align-items-center">
+        <div class="col-md-3">
+            <label class="info-label mb-1">Month</label>
+            <select name="month" class="form-select form-select-sm">
+                <option value="">All Months</option>
+                {% for m_num, m_name in months %}
+                <option value="{{ m_num }}" {% if request.GET.month == m_num|stringformat:"s" %}selected{% endif %}>{{ m_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="info-label mb-1">Year</label>
+            <input type="number" name="year" class="form-control form-control-sm" placeholder="Year" value="{{ request.GET.year|default:current_year }}">
+        </div>
+        {% if user.is_hr_admin_role %}
+        <div class="col-md-3">
+            <label class="info-label mb-1">Department</label>
+            <select name="department" class="form-select form-select-sm">
+                <option value="">All Departments</option>
+                {% for d in departments %}
+                <option value="{{ d.pk }}" {% if request.GET.department == d.pk|stringformat:"s" %}selected{% endif %}>{{ d.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="info-label mb-1">Search</label>
+            <input type="text" name="search" class="form-control form-control-sm" placeholder="Name or Payslip #..." value="{{ request.GET.search }}">
+        </div>
+        {% endif %}
+        <div class="col-md-2 d-flex gap-2 align-self-end mt-2">
+            <button type="submit" class="btn btn-primary btn-sm flex-grow-1"><i class="bi bi-filter me-1"></i> Apply Filter</button>
+            <a href="{% url 'payroll:payroll_list' %}" class="btn btn-outline-secondary btn-sm" title="Clear Filters"><i class="bi bi-arrow-counterclockwise"></i></a>
+        </div>
+    </form>
 </div>
 
 <!-- Payroll Table -->
-<div class="card shadow-sm">
-    <div class="table-responsive">
+<div class="card shadow-sm border-0">
+    <div class="table-responsive border-0">
         <table class="table table-hover align-middle mb-0">
             <thead>
                 <tr>
@@ -76,47 +78,63 @@
             <tbody>
                 {% for p in payrolls %}
                 <tr>
-                    <td><span class="badge bg-light text-dark border">{{ p.payslip_number }}</span></td>
+                    <td><span class="badge bg-light text-dark border font-monospace">{{ p.payslip_number }}</span></td>
                     <td>
-                        <div class="fw-semibold small">{{ p.employee.full_name }}</div>
-                        <div class="text-muted" style="font-size: 0.75rem;">{{ p.employee.employee_id }}</div>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="avatar" style="width: 30px; height: 30px; font-size: 0.75rem;">
+                                {{ p.employee.first_name|first|upper }}
+                            </div>
+                            <div>
+                                <div class="fw-bold small">{{ p.employee.full_name }}</div>
+                                <div class="text-muted" style="font-size: 0.75rem;">{{ p.employee.employee_id }}</div>
+                            </div>
+                        </div>
                     </td>
-                    <td class="small">{{ p.employee.department.code }}</td>
-                    <td class="small">{{ p.month }}/{{ p.year }}</td>
-                    <td class="small">${{ p.gross_salary|floatformat:2 }}</td>
-                    <td class="small text-danger">-${{ p.total_deductions|floatformat:2 }}</td>
-                    <td class="fw-bold text-success">${{ p.net_salary|floatformat:2 }}</td>
+                    <td><span class="badge bg-secondary-subtle text-secondary-emphasis">{{ p.employee.department.code }}</span></td>
+                    <td class="small">{{ p.payroll_period.month }}/{{ p.payroll_period.year }}</td>
+                    <td class="font-monospace">${{ p.gross_salary|floatformat:2 }}</td>
+                    <td class="text-danger font-monospace">-${{ p.total_deductions|floatformat:2 }}</td>
+                    <td class="fw-bold text-success font-monospace">${{ p.net_salary|floatformat:2 }}</td>
                     <td>
-                        <span class="badge bg-success-subtle text-success">{{ p.get_status_display }}</span>
+                        <span class="badge badge-present">{{ p.get_status_display }}</span>
                     </td>
                     <td class="text-end">
-                        <a href="{% url 'payroll:payroll_detail' p.pk %}" class="btn btn-outline-primary btn-sm py-0 px-2" title="View Payslip">
-                            View
-                        </a>
-                        <a href="{% url 'payroll:payslip_pdf' p.pk %}" class="btn btn-outline-danger btn-sm py-0 px-2 ms-1" title="Download PDF">
-                            <i class="bi bi-file-earmark-pdf"></i>
-                        </a>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'payroll:payroll_detail' p.pk %}" class="btn btn-light border" title="View Payslip Breakdown">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{% url 'payroll:payslip_pdf' p.pk %}" class="btn btn-light border text-danger" title="Download PDF Payslip">
+                                <i class="bi bi-file-earmark-pdf"></i>
+                            </a>
+                        </div>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="9" class="text-center py-5 text-muted">No payroll records matching your query.</td>
+                    <td colspan="9" class="text-center py-5">
+                        <div class="empty-state border-0 p-2">
+                            <i class="bi bi-cash-coin empty-state-icon"></i>
+                            <div class="empty-state-title">No payroll records found</div>
+                            <div class="empty-state-text">No payroll batches match the selected month and period filter.</div>
+                        </div>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 
+    <!-- Pagination -->
     {% if is_paginated %}
-    <div class="card-footer bg-white d-flex justify-content-between align-items-center py-2">
+    <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
         <small class="text-muted">Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</small>
         <ul class="pagination pagination-sm mb-0">
             {% if page_obj.has_previous %}
-            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo; Previous</a></li>
             {% endif %}
             <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
             {% if page_obj.has_next %}
-            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next &raquo;</a></li>
             {% endif %}
         </ul>
     </div>

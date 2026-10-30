@@ -3,32 +3,47 @@
 {% block title %}{% if form.instance.pk %}Edit User{% else %}Create User{% endif %} - HR Automation{% endblock %}
 
 {% block content %}
+<div class="page-header justify-content-center">
+    <div class="col-lg-7">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1 small">
+                <li class="breadcrumb-item"><a href="{% url 'accounts:user_list' %}">User Management</a></li>
+                <li class="breadcrumb-item active">{% if form.instance.pk %}Edit User{% else %}New Account{% endif %}</li>
+            </ol>
+        </nav>
+        <h2 class="page-title">{% if form.instance.pk %}Edit User: {{ form.instance.username }}{% else %}Create New User Account{% endif %}</h2>
+        <p class="page-subtitle">Configure login credentials, role privileges, and system access.</p>
+    </div>
+</div>
+
 <div class="row justify-content-center">
     <div class="col-lg-7">
-        <div class="card shadow-sm">
-            <div class="card-header bg-white">
-                <span class="fw-bold">{% if form.instance.pk %}Edit User: {{ form.instance.username }}{% else %}Create New User Account{% endif %}</span>
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <span class="fw-bold"><i class="bi bi-person-gear me-2 text-primary"></i>Account Authorization Settings</span>
             </div>
-            <div class="card-body">
-                <form method="post">
+            <div class="card-body p-4">
+                <form method="post" novalidate>
                     {% csrf_token %}
                     <div class="row g-3">
                         {% for field in form %}
-                        <div class="{% if field.name in 'username,email,role,password,confirm_password' %}col-md-6{% else %}col-md-6{% endif %}">
-                            <label class="form-label small fw-semibold">{{ field.label }}</label>
+                        <div class="col-md-6">
+                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
                             {{ field }}
                             {% if field.help_text %}
-                            <div class="form-text small">{{ field.help_text }}</div>
+                            <div class="form-text">{{ field.help_text }}</div>
                             {% endif %}
                             {% for error in field.errors %}
-                            <div class="text-danger small mt-1">{{ error }}</div>
+                            <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>
                             {% endfor %}
                         </div>
                         {% endfor %}
                     </div>
-                    <div class="d-flex justify-content-between mt-4 pt-3 border-top">
-                        <a href="{% url 'accounts:user_list' %}" class="btn btn-light btn-sm">Cancel</a>
-                        <button type="submit" class="btn btn-primary btn-sm px-4">Save User</button>
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        <a href="{% url 'accounts:user_list' %}" class="btn btn-light border btn-sm">Cancel</a>
+                        <button type="submit" class="btn btn-primary btn-sm px-4">
+                            <i class="bi bi-check2 me-1"></i> Save User Account
+                        </button>
                     </div>
                 </form>
             </div>

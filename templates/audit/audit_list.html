@@ -3,98 +3,110 @@
 {% block title %}Audit Trail - HR Automation{% endblock %}
 
 {% block content %}
-<div class="mb-4">
-    <h4 class="fw-bold mb-1">Administrative Audit Trail</h4>
-    <p class="text-muted small mb-0">Immutable records of system actions, updates, payroll disbursements, and approvals for governance and compliance.</p>
-</div>
-
-<!-- Filters -->
-<div class="card shadow-sm mb-4">
-    <div class="card-body p-3">
-        <form method="get" class="row g-2 align-items-center">
-            <div class="col-md-3">
-                <select name="action" class="form-select form-select-sm">
-                    <option value="">All Actions</option>
-                    {% for val, label in actions %}
-                    <option value="{{ val }}" {% if request.GET.action == val %}selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-3">
-                <select name="object_type" class="form-select form-select-sm">
-                    <option value="">All Modules</option>
-                    {% for ot in object_types %}
-                    <option value="{{ ot }}" {% if request.GET.object_type == ot %}selected{% endif %}>{{ ot }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-4">
-                <input type="text" name="search" class="form-control form-control-sm" placeholder="Search actor, ID, or change summary..." value="{{ request.GET.search }}">
-            </div>
-            <div class="col-md-2 d-flex gap-2">
-                <button type="submit" class="btn btn-secondary btn-sm flex-grow-1"><i class="bi bi-filter me-1"></i> Filter</button>
-                <a href="{% url 'audit:audit_list' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-counterclockwise"></i></a>
-            </div>
-        </form>
+<div class="page-header">
+    <div>
+        <h2 class="page-title">Administrative Audit Trail</h2>
+        <p class="page-subtitle">Immutable chronological journal of system operations, credential changes, and payroll executions for compliance.</p>
     </div>
 </div>
 
+<!-- Filters -->
+<div class="filter-card">
+    <form method="get" class="row g-2 align-items-center">
+        <div class="col-md-3">
+            <label class="info-label mb-1">Action Type</label>
+            <select name="action" class="form-select form-select-sm">
+                <option value="">All Actions</option>
+                {% for val, label in actions %}
+                <option value="{{ val }}" {% if request.GET.action == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="info-label mb-1">Module / Domain</label>
+            <select name="object_type" class="form-select form-select-sm">
+                <option value="">All Modules</option>
+                {% for ot in object_types %}
+                <option value="{{ ot }}" {% if request.GET.object_type == ot %}selected{% endif %}>{{ ot }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="info-label mb-1">Actor or Record Query</label>
+            <input type="text" name="search" class="form-control form-control-sm" placeholder="Search actor, ID, or change summary..." value="{{ request.GET.search }}">
+        </div>
+        <div class="col-md-2 d-flex gap-2 align-self-end mt-2">
+            <button type="submit" class="btn btn-primary btn-sm flex-grow-1"><i class="bi bi-filter me-1"></i> Filter</button>
+            <a href="{% url 'audit:audit_list' %}" class="btn btn-outline-secondary btn-sm" title="Clear Filters"><i class="bi bi-arrow-counterclockwise"></i></a>
+        </div>
+    </form>
+</div>
+
 <!-- Audit Table -->
-<div class="card shadow-sm">
-    <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+<div class="card shadow-sm border-0">
+    <div class="table-responsive border-0">
+        <table class="table table-hover align-middle mb-0">
             <thead>
                 <tr>
                     <th style="width: 15%;">Timestamp</th>
-                    <th style="width: 12%;">Actor</th>
+                    <th style="width: 14%;">Actor</th>
                     <th style="width: 10%;">Action</th>
                     <th style="width: 15%;">Target Record</th>
-                    <th style="width: 38%;">Change Summary</th>
-                    <th style="width: 10%;">IP Address</th>
+                    <th style="width: 34%;">Change Summary</th>
+                    <th style="width: 12%;">IP Address</th>
                 </tr>
             </thead>
             <tbody>
                 {% for log in audit_logs %}
                 <tr>
-                    <td class="text-muted small">{{ log.created_at|date:"Y-m-d H:i:s" }}</td>
-                    <td class="fw-semibold">
-                        {% if log.actor %}
-                        {{ log.actor.username }} <small class="text-muted d-block">({{ log.actor.get_role_display }})</small>
-                        {% else %}
-                        <span class="text-secondary">System</span>
-                        {% endif %}
+                    <td class="text-muted small font-monospace">{{ log.created_at|date:"Y-m-d H:i:s" }}</td>
+                    <td>
+                        <div class="fw-semibold">
+                            {% if log.actor %}
+                            {{ log.actor.username }} <small class="text-muted d-block" style="font-size: 0.725rem;">({{ log.actor.get_role_display }})</small>
+                            {% else %}
+                            <span class="text-secondary">System Daemon</span>
+                            {% endif %}
+                        </div>
                     </td>
                     <td>
-                        <span class="badge {% if log.action == 'CREATE' %}bg-success{% elif log.action == 'UPDATE' %}bg-warning text-dark{% elif log.action == 'DELETE' %}bg-danger{% elif log.action == 'APPROVE' %}bg-info text-dark{% elif log.action == 'PROCESS' %}bg-primary{% else %}bg-secondary{% endif %}">
+                        <span class="badge {% if log.action == 'CREATE' %}bg-success text-white{% elif log.action == 'UPDATE' %}bg-warning text-dark{% elif log.action == 'DELETE' %}bg-danger text-white{% elif log.action == 'APPROVE' %}bg-info text-white{% elif log.action == 'PROCESS' %}bg-primary text-white{% else %}bg-secondary text-white{% endif %}">
                             {{ log.action }}
                         </span>
                     </td>
                     <td>
                         <span class="fw-bold">{{ log.object_type }}</span>
-                        <span class="text-muted small">#{{ log.object_id }}</span>
+                        <span class="text-muted small font-monospace">#{{ log.object_id }}</span>
                     </td>
-                    <td>{{ log.change_summary }}</td>
+                    <td class="small">{{ log.change_summary }}</td>
                     <td class="text-muted font-monospace small">{{ log.ip_address|default:"127.0.0.1" }}</td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6" class="text-center py-5 text-muted">No audit logs matching query.</td>
+                    <td colspan="6" class="text-center py-5">
+                        <div class="empty-state border-0 p-2">
+                            <i class="bi bi-journal-text empty-state-icon"></i>
+                            <div class="empty-state-title">No audit records found</div>
+                            <div class="empty-state-text">No audit entries match the current filter criteria.</div>
+                        </div>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 
+    <!-- Pagination -->
     {% if is_paginated %}
-    <div class="card-footer bg-white d-flex justify-content-between align-items-center py-2">
+    <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
         <small class="text-muted">Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</small>
         <ul class="pagination pagination-sm mb-0">
             {% if page_obj.has_previous %}
-            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo; Previous</a></li>
             {% endif %}
             <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
             {% if page_obj.has_next %}
-            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next &raquo;</a></li>
             {% endif %}
         </ul>
     </div>

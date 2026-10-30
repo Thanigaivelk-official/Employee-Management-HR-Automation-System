@@ -3,20 +3,22 @@
 {% block title %}Reports &amp; Data Exports - HR Automation{% endblock %}
 
 {% block content %}
-<div class="mb-4">
-    <h4 class="fw-bold mb-1">Reports &amp; Data Exports</h4>
-    <p class="text-muted small mb-0">Generate, stream, and download company-wide records in CSV and ReportLab vector PDF formats.</p>
+<div class="page-header">
+    <div>
+        <h2 class="page-title">Executive Intelligence &amp; Data Exports</h2>
+        <p class="page-subtitle">Streamline organization metrics, attendance durations, payroll batches, and ReportLab PDF documents.</p>
+    </div>
 </div>
 
 <div class="row g-4">
     <!-- Report 1: Employee Directory -->
     <div class="col-md-6">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-white fw-bold d-flex align-items-center">
+        <div class="card shadow-sm h-100 border-0">
+            <div class="card-header bg-white fw-bold d-flex align-items-center py-3">
                 <i class="bi bi-people-fill text-primary me-2 fs-5"></i>
                 <span>Employee Directory Report</span>
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 <p class="text-muted small">Export full roster of active staff, designations, departments, contact info, and joining dates.</p>
                 <form action="{% url 'reports:export_employees_csv' %}" method="get" class="row g-2 mb-3">
                     <div class="col-sm-8">
@@ -42,21 +44,23 @@
 
     <!-- Report 2: Attendance Monthly Summary -->
     <div class="col-md-6">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-white fw-bold d-flex align-items-center">
+        <div class="card shadow-sm h-100 border-0">
+            <div class="card-header bg-white fw-bold d-flex align-items-center py-3">
                 <i class="bi bi-clock-history text-success me-2 fs-5"></i>
                 <span>Attendance Log &amp; Durations</span>
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 <p class="text-muted small">Export itemized clock-in/out timestamps, hours worked, late arrival flags, and status codes.</p>
                 <form action="{% url 'reports:export_attendance_csv' %}" method="get" class="row g-2">
                     <div class="col-6">
+                        <label class="info-label mb-1">Month</label>
                         <input type="number" name="month" class="form-control form-control-sm" value="{{ today.month }}" min="1" max="12" placeholder="Month">
                     </div>
                     <div class="col-6">
+                        <label class="info-label mb-1">Year</label>
                         <input type="number" name="year" class="form-control form-control-sm" value="{{ today.year }}" placeholder="Year">
                     </div>
-                    <div class="col-12 mt-2">
+                    <div class="col-12 mt-3">
                         <button type="submit" class="btn btn-outline-success btn-sm w-100">
                             <i class="bi bi-download me-1"></i> Export Attendance CSV
                         </button>
@@ -68,12 +72,12 @@
 
     <!-- Report 3: Leave Request Log -->
     <div class="col-md-6">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-white fw-bold d-flex align-items-center">
+        <div class="card shadow-sm h-100 border-0">
+            <div class="card-header bg-white fw-bold d-flex align-items-center py-3">
                 <i class="bi bi-calendar2-check text-warning me-2 fs-5"></i>
                 <span>Leave Applications &amp; Balances</span>
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 <p class="text-muted small">Export history of employee leave requests, approval decisions, comments, and working day counts.</p>
                 <a href="{% url 'reports:export_leaves_csv' %}" class="btn btn-outline-warning btn-sm w-100 text-dark">
                     <i class="bi bi-download me-1"></i> Download Leave Requests CSV
@@ -82,26 +86,28 @@
         </div>
     </div>
 
-    <!-- Report 4: Payroll Master Summary -->
+    <!-- Report 4: Payroll Master Register -->
     {% if user.is_hr_admin_role %}
     <div class="col-md-6">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-white fw-bold d-flex align-items-center">
-                <i class="bi bi-cash-stack text-info me-2 fs-5"></i>
+        <div class="card shadow-sm h-100 border-0">
+            <div class="card-header bg-white fw-bold d-flex align-items-center py-3">
+                <i class="bi bi-wallet2 text-info me-2 fs-5"></i>
                 <span>Payroll Master Register</span>
             </div>
-            <div class="card-body">
-                <p class="text-muted small">Download complete payroll disbursement breakdown including basic, allowances, PF, tax, and net pays.</p>
+            <div class="card-body p-4">
+                <p class="text-muted small">Export complete payroll disbursement records, gross wages, statutory PF deductions, and net payouts.</p>
                 <form action="{% url 'reports:export_payroll_csv' %}" method="get" class="row g-2">
                     <div class="col-6">
+                        <label class="info-label mb-1">Month</label>
                         <input type="number" name="month" class="form-control form-control-sm" value="{{ today.month }}" min="1" max="12" placeholder="Month">
                     </div>
                     <div class="col-6">
+                        <label class="info-label mb-1">Year</label>
                         <input type="number" name="year" class="form-control form-control-sm" value="{{ today.year }}" placeholder="Year">
                     </div>
-                    <div class="col-12 mt-2">
-                        <button type="submit" class="btn btn-outline-info btn-sm w-100 text-dark">
-                            <i class="bi bi-download me-1"></i> Download Payroll CSV
+                    <div class="col-12 mt-3">
+                        <button type="submit" class="btn btn-outline-info btn-sm w-100">
+                            <i class="bi bi-download me-1"></i> Export Payroll CSV
                         </button>
                     </div>
                 </form>

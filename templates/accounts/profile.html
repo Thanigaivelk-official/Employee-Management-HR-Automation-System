@@ -3,45 +3,58 @@
 {% block title %}My Profile - HR Automation{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12 mb-4">
-        <h4 class="fw-bold mb-1">User Profile</h4>
-        <p class="text-muted small">Manage your user account credentials and view your linked employment details.</p>
+<div class="page-header">
+    <div>
+        <h2 class="page-title">User Profile &amp; Settings</h2>
+        <p class="page-subtitle">Manage personal account credentials, communication preferences, and linked organizational credentials.</p>
     </div>
+</div>
 
+<div class="row g-4">
     <!-- User Account Summary & Update -->
-    <div class="col-lg-5 mb-4">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                <span class="fw-bold"><i class="bi bi-person-badge me-2"></i>Account Information</span>
-                <span class="badge bg-primary">{{ user.get_role_display }}</span>
+    <div class="col-lg-5">
+        <div class="card shadow-sm h-100 border-0">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                <span class="fw-bold"><i class="bi bi-person-badge me-2 text-primary"></i>Account Information</span>
+                <span class="badge bg-primary text-white font-monospace">{{ user.get_role_display }}</span>
             </div>
-            <div class="card-body">
-                <form method="post">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+                    <div class="avatar avatar-lg bg-primary text-white shadow-sm">
+                        {{ user.first_name|first|default:user.username|first|upper }}
+                    </div>
+                    <div>
+                        <h5 class="fw-bold text-dark mb-0">{{ user.get_full_name|default:user.username }}</h5>
+                        <div class="text-muted small">@{{ user.username }}</div>
+                        <div class="badge badge-present mt-1">Active Account</div>
+                    </div>
+                </div>
+
+                <form method="post" novalidate>
                     {% csrf_token %}
                     <div class="mb-3">
-                        <label class="form-label small fw-semibold">Username</label>
-                        <input type="text" class="form-control" value="{{ user.username }}" readonly disabled>
+                        <label class="form-label">System Username</label>
+                        <input type="text" class="form-control font-monospace bg-light" value="{{ user.username }}" readonly disabled>
                     </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label small fw-semibold">First Name</label>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label" for="{{ user_form.first_name.id_for_label }}">First Name</label>
                             {{ user_form.first_name }}
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label small fw-semibold">Last Name</label>
+                        <div class="col-md-6">
+                            <label class="form-label" for="{{ user_form.last_name.id_for_label }}">Last Name</label>
                             {{ user_form.last_name }}
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-semibold">Email Address</label>
+                        <label class="form-label" for="{{ user_form.email.id_for_label }}">Official Email Address</label>
                         {{ user_form.email }}
                     </div>
                     <div class="mb-4">
-                        <label class="form-label small fw-semibold">Contact Phone</label>
+                        <label class="form-label" for="{{ user_form.phone_number.id_for_label }}">Contact Phone</label>
                         {{ user_form.phone_number }}
                     </div>
-                    <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top">
                         <button type="submit" class="btn btn-primary btn-sm px-3">
                             <i class="bi bi-check2-circle me-1"></i> Save Changes
                         </button>
@@ -55,53 +68,62 @@
     </div>
 
     <!-- Linked Employee Profile Details -->
-    <div class="col-lg-7 mb-4">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-white">
-                <span class="fw-bold"><i class="bi bi-building me-2"></i>Organizational Employment Record</span>
+    <div class="col-lg-7">
+        <div class="card shadow-sm h-100 border-0">
+            <div class="card-header bg-white py-3">
+                <span class="fw-bold"><i class="bi bi-building me-2 text-primary"></i>Organizational Employment Record</span>
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 {% if employee_profile %}
                 <div class="row g-3">
                     <div class="col-sm-6">
-                        <div class="text-muted small">Employee ID</div>
-                        <div class="fw-bold">{{ employee_profile.employee_id }}</div>
+                        <div class="info-label">Employee ID</div>
+                        <div class="info-value font-monospace">{{ employee_profile.employee_id }}</div>
                     </div>
                     <div class="col-sm-6">
-                        <div class="text-muted small">Department</div>
-                        <div class="fw-bold">{{ employee_profile.department.name }} ({{ employee_profile.department.code }})</div>
+                        <div class="info-label">Department</div>
+                        <div class="info-value">{{ employee_profile.department.name }} ({{ employee_profile.department.code }})</div>
                     </div>
                     <div class="col-sm-6">
-                        <div class="text-muted small">Designation</div>
-                        <div class="fw-bold">{{ employee_profile.designation }}</div>
+                        <div class="info-label">Official Designation</div>
+                        <div class="info-value">{{ employee_profile.designation }}</div>
                     </div>
                     <div class="col-sm-6">
-                        <div class="text-muted small">Employment Status</div>
-                        <span class="badge bg-success">{{ employee_profile.get_employment_status_display }}</span>
+                        <div class="info-label">Employment Status</div>
+                        <div>
+                            {% if employee_profile.employment_status == 'ACTIVE' %}
+                            <span class="badge badge-present">Active</span>
+                            {% else %}
+                            <span class="badge badge-absent">{{ employee_profile.get_employment_status_display }}</span>
+                            {% endif %}
+                        </div>
                     </div>
                     <div class="col-sm-6">
-                        <div class="text-muted small">Reporting Manager</div>
-                        <div class="fw-bold">{{ employee_profile.reporting_manager.full_name|default:"None / Direct to Executive" }}</div>
+                        <div class="info-label">Employment Type</div>
+                        <div class="info-value">{{ employee_profile.get_employment_type_display }}</div>
                     </div>
                     <div class="col-sm-6">
-                        <div class="text-muted small">Date of Joining</div>
-                        <div class="fw-bold">{{ employee_profile.date_of_joining }}</div>
+                        <div class="info-label">Date of Joining</div>
+                        <div class="info-value">{{ employee_profile.date_of_joining|date:"M d, Y" }}</div>
                     </div>
-                    <div class="col-12">
-                        <div class="text-muted small">Residential Address</div>
-                        <div>{{ employee_profile.address|default:"Not specified" }}</div>
+                    <div class="col-sm-6">
+                        <div class="info-label">Reporting Manager</div>
+                        <div class="info-value">{{ employee_profile.reporting_manager.full_name|default:"Direct to Executive" }}</div>
                     </div>
-                </div>
-                <div class="mt-4 pt-3 border-top">
-                    <a href="{% url 'employees:employee_detail' employee_profile.pk %}" class="btn btn-outline-primary btn-sm">
-                        <i class="bi bi-person-lines-fill me-1"></i> View Full Employee Dossier
-                    </a>
+                    <div class="col-sm-6">
+                        <div class="info-label">Emergency Contact</div>
+                        <div class="info-value">{{ employee_profile.emergency_contact|default:"--" }}</div>
+                    </div>
+                    <div class="col-12 pt-2">
+                        <div class="info-label">Residential Address</div>
+                        <div class="p-3 bg-light rounded-3 small border text-dark">{{ employee_profile.address|default:"Not specified" }}</div>
+                    </div>
                 </div>
                 {% else %}
                 <div class="text-center py-5 text-muted">
-                    <i class="bi bi-person-x fs-1 d-block mb-2 text-secondary"></i>
-                    <p class="mb-0">No organizational employee record is linked to this account.</p>
-                    <small>Administrative accounts may operate without a direct employee dossier.</small>
+                    <i class="bi bi-person-x fs-1 text-secondary mb-2 d-block"></i>
+                    <div>This user account is not linked to an active employee dossier.</div>
+                    <div class="small">Administrative accounts may operate independently of workforce dossiers.</div>
                 </div>
                 {% endif %}
             </div>

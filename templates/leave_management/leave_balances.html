@@ -3,7 +3,7 @@
 {% block title %}Leave Balances - HR Automation{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="page-header">
     <div>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-1 small">
@@ -11,15 +11,16 @@
                 <li class="breadcrumb-item active">Balances</li>
             </ol>
         </nav>
-        <h4 class="fw-bold mb-0">Annual Leave Balances Ledger</h4>
+        <h2 class="page-title">Annual Leave Balances Ledger</h2>
+        <p class="page-subtitle">Detailed allocation quotas, approved days utilized, and remaining absence entitlements.</p>
     </div>
     <a href="{% url 'leave_management:leave_apply' %}" class="btn btn-primary btn-sm">
         <i class="bi bi-calendar-plus me-1"></i> Apply for Leave
     </a>
 </div>
 
-<div class="card shadow-sm">
-    <div class="table-responsive">
+<div class="card shadow-sm border-0">
+    <div class="table-responsive border-0">
         <table class="table table-hover align-middle mb-0">
             <thead>
                 <tr>
@@ -36,18 +37,31 @@
             <tbody>
                 {% for b in balances %}
                 <tr>
-                    <td><span class="badge bg-light text-dark border">{{ b.employee.employee_id }}</span></td>
-                    <td class="fw-semibold">{{ b.employee.full_name }}</td>
-                    <td>{{ b.employee.department.code }}</td>
-                    <td><span class="badge bg-primary-subtle text-primary">{{ b.leave_type.name }} ({{ b.leave_type.code }})</span></td>
-                    <td>{{ b.year }}</td>
-                    <td>{{ b.total_allocated|floatformat:1 }}</td>
+                    <td><span class="badge bg-light text-dark border font-monospace">{{ b.employee.employee_id }}</span></td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="avatar" style="width: 28px; height: 28px; font-size: 0.75rem;">
+                                {{ b.employee.first_name|first|upper }}
+                            </div>
+                            <span class="fw-bold"><a href="{% url 'employees:employee_detail' b.employee.pk %}" class="text-dark text-decoration-none">{{ b.employee.full_name }}</a></span>
+                        </div>
+                    </td>
+                    <td><span class="badge bg-secondary-subtle text-secondary-emphasis">{{ b.employee.department.code }}</span></td>
+                    <td><span class="badge bg-primary text-white font-monospace">{{ b.leave_type.name }} ({{ b.leave_type.code }})</span></td>
+                    <td class="font-monospace small">{{ b.year }}</td>
+                    <td class="fw-semibold">{{ b.total_allocated|floatformat:1 }}</td>
                     <td class="text-danger fw-semibold">{{ b.used|floatformat:1 }}</td>
-                    <td class="text-success fw-bold">{{ b.remaining|floatformat:1 }} days</td>
+                    <td class="text-success fw-bold font-monospace">{{ b.remaining|floatformat:1 }} days</td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="8" class="text-center py-4 text-muted">No leave balance records found.</td>
+                    <td colspan="8" class="text-center py-5">
+                        <div class="empty-state border-0 p-2">
+                            <i class="bi bi-pie-chart empty-state-icon"></i>
+                            <div class="empty-state-title">No balance records found</div>
+                            <div class="empty-state-text">No active leave entitlement balances have been initialized yet.</div>
+                        </div>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

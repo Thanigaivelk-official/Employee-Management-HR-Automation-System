@@ -3,39 +3,54 @@
 {% block title %}Process Monthly Payroll - HR Automation{% endblock %}
 
 {% block content %}
+<div class="page-header justify-content-center">
+    <div class="col-lg-7">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1 small">
+                <li class="breadcrumb-item"><a href="{% url 'payroll:payroll_list' %}">Payroll</a></li>
+                <li class="breadcrumb-item active">Run Monthly Batch</li>
+            </ol>
+        </nav>
+        <h2 class="page-title">Execute Monthly Payroll Processing</h2>
+        <p class="page-subtitle">Compute earnings, statutory deductions, absent penalties, and generate immutable payslip records.</p>
+    </div>
+</div>
+
 <div class="row justify-content-center">
     <div class="col-lg-7">
-        <div class="card shadow-sm">
-            <div class="card-header bg-white">
-                <span class="fw-bold"><i class="bi bi-gear-wide-connected me-2 text-primary"></i>Execute Monthly Payroll Processing</span>
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <span class="fw-bold"><i class="bi bi-calculator-fill me-2 text-primary"></i>Batch Computation Parameters</span>
             </div>
-            <div class="card-body">
-                <div class="alert alert-primary small py-2 mb-4">
-                    <i class="bi bi-info-circle me-1"></i>
-                    <strong>Automated Workflow:</strong> This will snapshot salary components, calculate statutory Provident Fund deductions, incorporate unpaid absences, and issue finalized payslips with audit trails. Duplicate runs for the same employee in the same period are automatically skipped to maintain data integrity.
+            <div class="card-body p-4">
+                <div class="alert alert-primary small d-flex align-items-center mb-4 border-0 bg-primary-subtle text-primary-emphasis">
+                    <i class="bi bi-info-circle-fill me-2 fs-5 text-primary"></i>
+                    <div>
+                        <strong>Automated Workflow:</strong> This routine snapshots salary components, applies statutory Provident Fund / Tax schedules, accounts for approved unpaid leaves, and generates official payslips. Duplicate runs for the same period are prevented.
+                    </div>
                 </div>
 
-                <form method="post">
+                <form method="post" novalidate>
                     {% csrf_token %}
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label small fw-semibold">Target Payroll Month *</label>
+                            <label class="form-label" for="{{ form.month.id_for_label }}">Target Payroll Month <span class="text-danger">*</span></label>
                             {{ form.month }}
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label small fw-semibold">Target Year *</label>
+                            <label class="form-label" for="{{ form.year.id_for_label }}">Target Calendar Year <span class="text-danger">*</span></label>
                             {{ form.year }}
                         </div>
                         <div class="col-12">
-                            <label class="form-label small fw-semibold">Department Scope (Leave blank for all departments)</label>
+                            <label class="form-label" for="{{ form.department.id_for_label }}">Department Scope (Leave blank to process all active divisions)</label>
                             {{ form.department }}
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-between mt-4 pt-3 border-top">
-                        <a href="{% url 'payroll:payroll_list' %}" class="btn btn-light btn-sm">Cancel</a>
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        <a href="{% url 'payroll:payroll_list' %}" class="btn btn-light border btn-sm">Cancel</a>
                         <button type="submit" class="btn btn-primary btn-sm px-4" data-confirm="Are you sure you want to run the batch payroll calculation for this period?">
-                            <i class="bi bi-play-circle me-1"></i> Start Batch Processing
+                            <i class="bi bi-play-circle-fill me-1"></i> Start Batch Processing
                         </button>
                     </div>
                 </form>

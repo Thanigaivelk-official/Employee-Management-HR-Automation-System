@@ -3,15 +3,15 @@
 {% block title %}Attendance - HR Automation{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="page-header">
     <div>
-        <h4 class="fw-bold mb-1">Attendance Management</h4>
-        <p class="text-muted small mb-0">Daily check-in / check-out records, work durations, and punctuality monitoring.</p>
+        <h2 class="page-title">Attendance Tracking</h2>
+        <p class="page-subtitle">Daily biometric check-in / check-out records, calculated working durations, and punctuality monitoring.</p>
     </div>
     <div class="d-flex gap-2">
         {% if user.is_hr_admin_role %}
         <a href="{% url 'attendance:attendance_add' %}" class="btn btn-outline-primary btn-sm">
-            <i class="bi bi-plus-circle me-1"></i> Log / Correct Entry
+            <i class="bi bi-plus-circle me-1"></i> Log Manual Entry
         </a>
         {% endif %}
         <a href="{% url 'reports:export_attendance_csv' %}?month={{ today.month }}&year={{ today.year }}" class="btn btn-secondary btn-sm">
@@ -21,48 +21,46 @@
 </div>
 
 <!-- Filters -->
-<div class="card shadow-sm mb-4">
-    <div class="card-body p-3">
-        <form method="get" class="row g-2 align-items-center">
-            <div class="col-md-3">
-                <label class="form-label small text-muted mb-0">Filter by Specific Date</label>
-                <input type="date" name="date" class="form-control form-control-sm" value="{{ request.GET.date }}">
-            </div>
-            {% if not user.is_only_employee_role %}
-            <div class="col-md-3">
-                <label class="form-label small text-muted mb-0">Department</label>
-                <select name="department" class="form-select form-select-sm">
-                    <option value="">All Departments</option>
-                    {% for d in departments %}
-                    <option value="{{ d.pk }}" {% if request.GET.department == d.pk|stringformat:"s" %}selected{% endif %}>{{ d.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label small text-muted mb-0">Status</label>
-                <select name="status" class="form-select form-select-sm">
-                    <option value="">All Statuses</option>
-                    {% for val, label in statuses %}
-                    <option value="{{ val }}" {% if request.GET.status == val %}selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label small text-muted mb-0">Employee</label>
-                <input type="text" name="search" class="form-control form-control-sm" placeholder="Name or ID..." value="{{ request.GET.search }}">
-            </div>
-            {% endif %}
-            <div class="col-md-2 d-flex gap-2 align-self-end mt-2">
-                <button type="submit" class="btn btn-primary btn-sm flex-grow-1"><i class="bi bi-filter me-1"></i> Apply</button>
-                <a href="{% url 'attendance:attendance_list' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-counterclockwise"></i></a>
-            </div>
-        </form>
-    </div>
+<div class="filter-card">
+    <form method="get" class="row g-2 align-items-center">
+        <div class="col-md-3">
+            <label class="info-label mb-1">Specific Date</label>
+            <input type="date" name="date" class="form-control form-control-sm" value="{{ request.GET.date }}">
+        </div>
+        {% if not user.is_only_employee_role %}
+        <div class="col-md-3">
+            <label class="info-label mb-1">Department</label>
+            <select name="department" class="form-select form-select-sm">
+                <option value="">All Departments</option>
+                {% for d in departments %}
+                <option value="{{ d.pk }}" {% if request.GET.department == d.pk|stringformat:"s" %}selected{% endif %}>{{ d.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="info-label mb-1">Status</label>
+            <select name="status" class="form-select form-select-sm">
+                <option value="">All Statuses</option>
+                {% for val, label in statuses %}
+                <option value="{{ val }}" {% if request.GET.status == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="info-label mb-1">Employee Search</label>
+            <input type="text" name="search" class="form-control form-control-sm" placeholder="Name or ID..." value="{{ request.GET.search }}">
+        </div>
+        {% endif %}
+        <div class="col-md-2 d-flex gap-2 align-self-end mt-2">
+            <button type="submit" class="btn btn-primary btn-sm flex-grow-1"><i class="bi bi-filter me-1"></i> Apply</button>
+            <a href="{% url 'attendance:attendance_list' %}" class="btn btn-outline-secondary btn-sm" title="Clear Filters"><i class="bi bi-arrow-counterclockwise"></i></a>
+        </div>
+    </form>
 </div>
 
 <!-- Attendance Records Table -->
-<div class="card shadow-sm">
-    <div class="table-responsive">
+<div class="card shadow-sm border-0">
+    <div class="table-responsive border-0">
         <table class="table table-hover align-middle mb-0">
             <thead>
                 <tr>
@@ -78,32 +76,49 @@
                 </tr>
             </thead>
             <tbody>
-                {% for att in attendances %}
+                {% for record in attendance_records %}
                 <tr>
-                    <td class="fw-semibold small">{{ att.attendance_date|date:"Y-m-d (D)" }}</td>
+                    <td class="fw-semibold small font-monospace">{{ record.date|date:"Y-m-d" }}</td>
                     <td>
-                        <div class="fw-semibold small">{{ att.employee.full_name }}</div>
-                        <div class="text-muted" style="font-size: 0.75rem;">{{ att.employee.employee_id }}</div>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="avatar" style="width: 32px; height: 32px; font-size: 0.75rem;">
+                                {{ record.employee.first_name|first|upper }}
+                            </div>
+                            <div>
+                                <div class="fw-bold"><a href="{% url 'employees:employee_detail' record.employee.pk %}" class="text-dark text-decoration-none">{{ record.employee.full_name }}</a></div>
+                                <div class="small text-muted" style="font-size: 0.75rem;">{{ record.employee.employee_id }}</div>
+                            </div>
+                        </div>
                     </td>
-                    <td class="small">{{ att.employee.department.code }}</td>
-                    <td class="small">{{ att.check_in|time:"H:i:s"|default:"-" }}</td>
-                    <td class="small">{{ att.check_out|time:"H:i:s"|default:"-" }}</td>
-                    <td class="small fw-semibold">{{ att.working_hours }} hrs</td>
+                    <td><span class="badge bg-secondary-subtle text-secondary-emphasis">{{ record.employee.department.name }}</span></td>
+                    <td class="font-monospace small">{% if record.check_in %}{{ record.check_in|time:"H:i:s" }}{% else %}--:--:--{% endif %}</td>
+                    <td class="font-monospace small">{% if record.check_out %}{{ record.check_out|time:"H:i:s" }}{% else %}--:--:--{% endif %}</td>
                     <td>
-                        <span class="badge {% if att.status == 'PRESENT' %}badge-present{% elif att.status == 'ABSENT' %}badge-absent{% elif att.status == 'HALF_DAY' %}badge-halfday{% elif att.status == 'LEAVE' %}badge-leave{% else %}bg-secondary{% endif %}">
-                            {{ att.get_status_display }}
+                        <span class="fw-bold {% if record.working_hours >= 8 %}text-success{% else %}text-muted{% endif %} font-monospace">
+                            {{ record.working_hours }}h
                         </span>
                     </td>
                     <td>
-                        {% if att.is_late %}
-                        <span class="badge bg-warning-subtle text-warning-emphasis"><i class="bi bi-exclamation-triangle me-1"></i>Late Arrival</span>
+                        {% if record.status == 'PRESENT' %}
+                        <span class="badge badge-present">Present</span>
+                        {% elif record.status == 'ABSENT' %}
+                        <span class="badge badge-absent">Absent</span>
+                        {% elif record.status == 'HALF_DAY' %}
+                        <span class="badge badge-halfday">Half Day</span>
                         {% else %}
-                        <span class="text-muted small">On Time</span>
+                        <span class="badge badge-leave">On Leave</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if record.is_late %}
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle"><i class="bi bi-clock-fill me-1"></i>Late Arrival</span>
+                        {% else %}
+                        <span class="badge bg-light text-muted border">On Time</span>
                         {% endif %}
                     </td>
                     {% if user.is_hr_admin_role %}
                     <td class="text-end">
-                        <a href="{% url 'attendance:attendance_edit' att.pk %}" class="btn btn-outline-secondary btn-sm p-1 px-2" title="Correct Record">
+                        <a href="{% url 'attendance:attendance_edit' record.pk %}" class="btn btn-light border btn-sm py-1 px-2" title="Correct Record">
                             <i class="bi bi-pencil"></i>
                         </a>
                     </td>
@@ -111,23 +126,30 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="9" class="text-center py-5 text-muted">No attendance logs found matching the filter criteria.</td>
+                    <td colspan="{% if user.is_hr_admin_role %}9{% else %}8{% endif %}" class="text-center py-5">
+                        <div class="empty-state border-0 p-2">
+                            <i class="bi bi-clock-history empty-state-icon"></i>
+                            <div class="empty-state-title">No attendance records found</div>
+                            <div class="empty-state-text">No attendance records matched the specified filter criteria. Try expanding your date range.</div>
+                        </div>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 
+    <!-- Pagination -->
     {% if is_paginated %}
-    <div class="card-footer bg-white d-flex justify-content-between align-items-center py-2">
+    <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
         <small class="text-muted">Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</small>
         <ul class="pagination pagination-sm mb-0">
             {% if page_obj.has_previous %}
-            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo; Previous</a></li>
             {% endif %}
             <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
             {% if page_obj.has_next %}
-            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next &raquo;</a></li>
             {% endif %}
         </ul>
     </div>
